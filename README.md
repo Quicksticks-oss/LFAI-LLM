@@ -23,6 +23,11 @@ if __name__ == '__main__':
     output, hidden = inference.run('MENENIUS:')
     print(output)
 ```
+
+## Models
+
+- [Shakespeare Small](https://huggingface.co/Quicksticks-oss/LFAI/blob/main/Shakespeare-0.8M-20230820-6-128-ctx128.pth)
+
 ### Training
 ```shell
 clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Path here" --contextsize=128
