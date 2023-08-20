@@ -67,5 +67,5 @@ if __name__ == '__main__':
 
     inference = Inference(args.model)
     with open(Path(args.prompt), 'r') as f:
-        output, hidden = inference.run(f.read())
-        print(output)
+        output, hidden = inference.run(f.read().replace('\n','\\n'))
+        print(output.replace('\\n','\n'))
