@@ -97,7 +97,7 @@ class Trainer:
 
             size = ((self.train_data.size(0)-1) - self.context_length) - \
                 (self.context_length*self.batch_size)
-            td = tqdm(range(0, size), postfix='training... ]',
+            td = tqdm(range(0, size), postfix='training... ] ',
                       dynamic_ncols=True)
 
             for _ in td:
@@ -133,18 +133,20 @@ class Trainer:
 
     def save(self, name: str = None):
         create_folder_if_not_exists('weights')
-        if name == None: name = self.save_file
+        if name == None:
+            name = self.save_file
         torch.save(self.model.state_dict(), Path('weights').joinpath(name))
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", default='LFAI',
                         help="Specify a model name.", required=True)
-    parser.add_argument("--epochs", default=300,
+    parser.add_argument("--epochs", default=1,
                         help="Specify how many epochs the model should train with.", required=False)
     parser.add_argument("--dataset", default='input.txt',
                         help="Specify the dataset the model will train on, this can be a file or folder.", required=True)
-    parser.add_argument("--numlayers", default=4,
+    parser.add_argument("--numlayers", default=6,
                         help="Specify how many layers the rnn layer will have.", required=False)
     parser.add_argument("--hiddensize", default=128,
                         help="Specify how large the hidden layer size will be.", required=False)
@@ -181,6 +183,7 @@ def main():
     print(f'Created model with {trainer.count_parameters()}M params...')
     print('Training model...')
     trainer.train()
+    print('Training complete...')
 
 
 if __name__ == '__main__':
