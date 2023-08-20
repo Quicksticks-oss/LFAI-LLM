@@ -1,1 +1,1 @@
-clear && python3 train.py --name="LFAI" --dataset="dataset/"
+clear && python3 train.py --name="LFAI" --dataset="dataset/" --batchsize=12

@@ -6,6 +6,7 @@ from utils import *
 import torch.nn as nn
 import argparse
 import datetime
+import random
 import torch
 import os
 
@@ -37,6 +38,16 @@ class Trainer:
         self.params = round(sum(p.numel()
                             for p in self.model.parameters()) / 1_000_000, 2)
         return self.params
+
+    def get_batch(self, split):
+        # generate a small batch of data of inputs x and targets y
+        size = random.randint(1,self.context_length)
+        data = self.train_data if split == 'train' else self.val_data
+        ix = torch.randint(len(data) - size, (self.batch_size,))
+        x = torch.stack([data[i:i+size] for i in ix])
+        y = torch.stack([data[i+1:i+size+1] for i in ix])
+        x, y = x.to(self.device), y.to(self.device)
+        return x, y
 
     def load_dataset(self):
         if self.dataset.exists():
@@ -92,20 +103,15 @@ class Trainer:
         for epoch in range(self.epochs):
             self.model.train()  # Puts the model into training mode.
 
-            # Initialize the hidden state
+            # Initialize the hidden state.
             hidden = self.model.init_hidden(self.batch_size)
-
-            size = ((self.train_data.size(0)-1) - self.context_length) - \
-                (self.context_length*self.batch_size)
+            size = ((self.train_data.size(0)-1) - self.context_length) - (self.context_length*self.batch_size)
             td = tqdm(range(0, size), postfix='training... ] ',
                       dynamic_ncols=True)
 
             for _ in td:
-                # Prepare the inputs and targets for the current batch
-                inputs_batch = self.train_data[_:_ + self.context_length * self.batch_size].view(
-                    self.batch_size, self.context_length).to(self.device)
-                targets_batch = self.train_data[_ + 1:_ + self.context_length * self.batch_size + 1].view(
-                    self.batch_size, self.context_length).to(self.device)
+                # Gets batch size.
+                inputs_batch, targets_batch = self.get_batch('train')
 
                 if self.half:  # Convert to half
                     inputs_batch = inputs_batch.to(torch.int16)
@@ -124,10 +130,11 @@ class Trainer:
                 # Detach hidden state to prevent backpropagation through time
                 hidden = tuple(h.detach() for h in hidden)
 
-                description = f'[ epoch: {epoch}, loss: {loss.item():.4f}'
-                tqdm.set_description(td, desc=description)
-                if _ % 16 == 0:
-                    self.save('current.pt')
+                if _ % 8 == 0:
+                    description = f'[ epoch: {epoch}, loss: {loss.item():.4f}'
+                    tqdm.set_description(td, desc=description)
+                    if _ % 128 == 0:
+                        self.save('current')
             print()
             self.save()
 
@@ -135,7 +142,14 @@ class Trainer:
         create_folder_if_not_exists('weights')
         if name == None:
             name = self.save_file
-        torch.save(self.model.state_dict(), Path('weights').joinpath(name))
+        save_out = {
+            'vocab_size': self.vocab_size,
+            'context_length': self.context_length,
+            'hidden_size': self.hiddensize,
+            'num_layers': self.numlayers,
+            'state_dict': self.model.state_dict()
+        }
+        torch.save(save_out, Path('weights').joinpath(name+'.pth'))
 
 
 def main():
@@ -163,13 +177,13 @@ def main():
 
     name = args.name
     dataset = args.dataset
-    epochs = args.epochs
-    numlayers = args.numlayers
-    hiddensize = args.hiddensize
-    contextsize = args.contextsize
-    batch_size = args.batchsize
-    learningrate = args.learningrate
-    half = args.half
+    epochs = int(args.epochs)
+    numlayers = int(args.numlayers)
+    hiddensize = int(args.hiddensize)
+    contextsize = int(args.contextsize)
+    batch_size = int(args.batchsize)
+    learningrate = float(args.learningrate)
+    half = bool(args.half)
 
     trainer = Trainer(name, dataset, epochs,
                       contextsize, numlayers, hiddensize,
