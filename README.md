@@ -28,7 +28,12 @@ if __name__ == '__main__':
     print(output)
 ```
 
-### Training
+## Documentation
+
+[Documentation](docs/DOCUMENTATION.md)
+
+
+### Training Simple
 ```shell
 clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Path here" --contextsize=128
 ```
@@ -42,12 +47,6 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 - Use last token as new token in inference
 
 - Add more integrations
-
-
-## Documentation
-
-[Documentation](docs/DOCUMENTATION.md)
-
 
 ## License
 
