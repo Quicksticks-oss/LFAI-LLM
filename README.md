@@ -15,6 +15,9 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 ![Training](images/training.gif)
 ![Inference](images/inference.png)
 
+## Documentation
+
+[Documentation](docs/DOCUMENTATION.md)
 
 ## Usage/Examples
 
@@ -27,11 +30,6 @@ if __name__ == '__main__':
     output, hidden = inference.run('MENENIUS:')
     print(output)
 ```
-
-## Documentation
-
-[Documentation](docs/DOCUMENTATION.md)
-
 
 ### Training Simple
 ```shell
