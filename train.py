@@ -15,7 +15,7 @@ import os
 
 class Trainer:
     def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False) -> None:
-        current_date = str(datetime.datetime.now().date()).replace('-', '')
+        self.current_date = str(datetime.datetime.now().date()).replace('-', '')
         self.name = name
         self.dataset = Path(dataset)
         self.epochs = epochs
@@ -26,7 +26,7 @@ class Trainer:
         self.context_length = context_length
         self.half = half
         self.params = 0
-        self.save_file = f'{name}-{self.params}M-{current_date}-{numlayers}-{hiddensize}-ctx{context_length}'
+        self.save_file = f'{name}-{self.params}M-{self.current_date}-{numlayers}-{hiddensize}-ctx{context_length}'
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.vocab_size = 0
@@ -38,6 +38,7 @@ class Trainer:
     def count_parameters(self):
         self.params = round(sum(p.numel()
                             for p in self.model.parameters()) / 1_000_000, 2)
+        self.save_file = f'{self.name}-{self.params}M-{self.current_date}-{self.numlayers}-{self.hiddensize}-ctx{self.context_length}'
         return self.params
 
     def get_batch(self, split):

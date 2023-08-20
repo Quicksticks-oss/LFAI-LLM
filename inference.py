@@ -58,6 +58,14 @@ class Inference:
 
 
 if __name__ == '__main__':
-    inference = Inference('weights/LFAI-0M-20230820-6-128-ctx512.pth')
-    output, hidden = inference.run('MENENIUS:')
-    print(output)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default='LFAI',
+                        help="Specify a model path.", required=True)
+    parser.add_argument("--prompt", default='LFAI',
+                        help="Specify a prompt path.", required=True)
+    args = parser.parse_args()
+
+    inference = Inference(args.model)
+    with open(Path(args.prompt), 'r') as f:
+        output, hidden = inference.run(f.read())
+        print(output.replace('\\n', '\n'))
