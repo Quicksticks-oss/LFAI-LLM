@@ -59,12 +59,12 @@ class Trainer:
                 if len(files) > 0:
                     for file in files:
                         with open(self.dataset.joinpath(file), 'r') as f:
-                            self.text += repr(f.read())
+                            self.text += repr(f.read().replace('\\n', '\n'))
                 else:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read())
+                    self.text = repr(f.read().replace('\\n', '\n'))
         else:
             raise IOError('Dataset does not exist!')
 

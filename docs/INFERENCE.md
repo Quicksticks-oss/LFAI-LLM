@@ -16,11 +16,11 @@ To run inference we just need to execute the following command.
 
 ### Windows 10/11
 ```bash
-python inference.py --name="weights/our full models name" --prompt="prompt.txt"
+python inference.py --model="weights/our full models name" --prompt="prompt.txt"
 ```
 ### Linux/Unix
 ```shell
-python3 inference.py --name="weights/our full models name" --prompt="prompt.txt"
+python3 inference.py --model="weights/our full models name" --prompt="prompt.txt"
 ```
 
 # Final Chapter

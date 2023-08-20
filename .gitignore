@@ -165,3 +165,4 @@ dataset/input.txt
 # model weights
 weights/*
 LFAI.code-workspace
+dataset/text.txt
