@@ -6,6 +6,9 @@ This is the official documentation for the LFAI lstm model.
 
 # Training is easy!
 
+## Youtube Tutorial
+[![Youtube](https://img.youtube.com/vi/ZgcPPSaNNbQ/0.jpg)](https://www.youtube.com/watch?v=ZgcPPSaNNbQ)
+
 ## Dataset
 The first step to start training your model is to find a suitable dataset for your model. A good place to find datasets for free is [Kaggle](https://kaggle.com/) in this example we will be going searching for datasets here [Kaggle Text Datasets](https://www.kaggle.com/search?q=text+datasetFileTypes%3Atxt).
 
