@@ -25,7 +25,7 @@ if __name__ == '__main__':
 ```
 ### Training
 ```shell
-clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Path here" --batchsize=32 --contextsize=128 --epochs=2
+clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Path here" --contextsize=128
 ```
 
 ## Roadmap
