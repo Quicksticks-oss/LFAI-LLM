@@ -30,6 +30,7 @@ class Trainer:
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.vocab_size = 0
+        self.chars = None
         self.model = None
         self.text = None
         self.data = None
@@ -57,22 +58,22 @@ class Trainer:
                 if len(files) > 0:
                     for file in files:
                         with open(self.dataset.joinpath(file), 'r') as f:
-                            self.text += f.read()
+                            self.text += repr(f.read())
                 else:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = f.read()
+                    self.text = repr(f.read())
         else:
             raise IOError('Dataset does not exist!')
 
     def load_tokenizer(self):
         if len(self.text) > 0:
-            chars = sorted(list(set(self.text)))
-            self.vocab_size = len(chars)
+            self.chars = sorted(list(set(self.text)))
+            self.vocab_size = len(self.chars)
             # Create a mapping from characters to integers
-            stoi = {ch: i for i, ch in enumerate(chars)}
-            itos = {i: ch for i, ch in enumerate(chars)}
+            stoi = {ch: i for i, ch in enumerate(self.chars)}
+            itos = {i: ch for i, ch in enumerate(self.chars)}
             # encoder: take a string, output a list of integers
             self.encode = lambda s: [stoi[c] for c in s]
             # decoder: take a list of integers, output a string
@@ -83,7 +84,7 @@ class Trainer:
 
     def convert_dataset(self):
         self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
-        n = int(0.9*len(self.data))  # first 90% will be train, rest val
+        n = int(1*len(self.data))  # first 90% will be train, rest val
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
         del (self.text)
@@ -147,6 +148,7 @@ class Trainer:
             'context_length': self.context_length,
             'hidden_size': self.hiddensize,
             'num_layers': self.numlayers,
+            'chars': self.chars,
             'state_dict': self.model.state_dict()
         }
         torch.save(save_out, Path('weights').joinpath(name+'.pth'))
