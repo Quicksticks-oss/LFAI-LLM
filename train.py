@@ -166,9 +166,9 @@ def main():
                         help="Specify how many layers the rnn layer will have.", required=False)
     parser.add_argument("--hiddensize", default=128,
                         help="Specify how large the hidden layer size will be.", required=False)
-    parser.add_argument("--contextsize", default=512,
+    parser.add_argument("--contextsize", default=256,
                         help="Specify the max length of the input context field.", required=False)
-    parser.add_argument("--batchsize", default=32,
+    parser.add_argument("--batchsize", default=16,
                         help="Specify how much data will be passed at one time.", required=False)
     parser.add_argument("--learningrate", default=0.001,
                         help="Specify how confident the model will be in itself.", required=False)
