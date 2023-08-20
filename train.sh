@@ -1,0 +1,1 @@
+clear && python3 train.py --name="LFAI" --dataset="dataset/"
