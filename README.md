@@ -14,6 +14,7 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 
 ## Usage/Examples
 
+### Inference
 ```python
 from inference import Inference
 
@@ -22,7 +23,10 @@ if __name__ == '__main__':
     output, hidden = inference.run('MENENIUS:')
     print(output)
 ```
-
+### Training
+```shell
+clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Path here" --batchsize=32 --contextsize=128 --epochs=2
+```
 
 ## Roadmap
 
