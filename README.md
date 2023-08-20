@@ -41,7 +41,7 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 
 ## Documentation
 
-[Documentation](https://linktodocumentation)
+[Documentation](docs/DOCUMENTATION.md)
 
 
 ## License
