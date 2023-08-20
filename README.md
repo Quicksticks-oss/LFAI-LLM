@@ -1,5 +1,5 @@
 
-![Logo](images/logo.png)
+![Logo](images/banner.png)
 
 
 # LFAI
