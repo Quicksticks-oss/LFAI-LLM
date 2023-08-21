@@ -3,6 +3,7 @@ from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
 from pathlib import Path
 from tqdm import tqdm
+from tokenizer import *
 from utils import *
 import torch.nn as nn
 import argparse
@@ -73,21 +74,29 @@ class Trainer:
 
     def load_tokenizer(self):
         if len(self.text) > 0:
-            self.chars = sorted(list(set(self.text)))
-            self.vocab_size = len(self.chars)
-            # Create a mapping from characters to integers
-            stoi = {ch: i for i, ch in enumerate(self.chars)}
-            itos = {i: ch for i, ch in enumerate(self.chars)}
-            # encoder: take a string, output a list of integers
-            self.encode = lambda s: [stoi[c] for c in s]
-            # decoder: take a list of integers, output a string
-            self.decode = lambda l: ''.join([itos[i] for i in l])
+            if self.version == 1:
+                self.chars = sorted(list(set(self.text)))
+                self.vocab_size = len(self.chars)
+                # Create a mapping from characters to integers
+                stoi = {ch: i for i, ch in enumerate(self.chars)}
+                itos = {i: ch for i, ch in enumerate(self.chars)}
+                # encoder: take a string, output a list of integers
+                self.encode = lambda s: [stoi[c] for c in s]
+                # decoder: take a list of integers, output a string
+                self.decode = lambda l: ''.join([itos[i] for i in l])
+            else:
+                self.tokenizer = Tokenizer()
+                self.tokenizer.load(self.text)
+                self.vocab_size = len(self.tokenizer.tokens)
         else:
             raise Exception(
                 'Could now load tokenizer due to lack of data in dataset.')
 
     def convert_dataset(self):
-        self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
+        if self.version == 1:
+            self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
+        else:
+            self.data = torch.tensor(self.tokenizer.encode(self.text), dtype=torch.long)
         n = int(1*len(self.data))  # first 90% will be train, rest val
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
@@ -181,7 +190,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=2,
+    parser.add_argument("--version", default=1,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()
@@ -202,6 +211,7 @@ def main():
                       batch_size, learningrate, half, version)
     print('Loading dataset...')
     trainer.load_dataset()
+    print('Loading tokenizer...')
     trainer.load_tokenizer()
     trainer.convert_dataset()
     print('Creating model...')
