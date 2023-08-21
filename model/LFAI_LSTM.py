@@ -49,7 +49,9 @@ class LFAI_LSTM_V2(nn.Module):
         # Precompute embeddings for all possible inputs
         self.embedding.weight.data = torch.randn(block_size + vocab_size, hidden_size).to(device)
 
-    def forward(self, x, hidden):
+    def forward(self, x, hidden=None):
+        if hidden == None:
+            hidden = self.init_hidden(1)
         embedded = self.embedding(x)
         embedded = F.dropout(embedded, p=self.dropout_p, training=self.training)  # Adjust the dropout rate as needed
         output, hidden = self.lstm(embedded, hidden)
