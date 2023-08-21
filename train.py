@@ -129,7 +129,6 @@ class Trainer:
          - First step: Learn basic language.
          - Final step: Cover whole dataset.
         '''
-        total_steps = int((self.epochs+2)/2)
         losses = []
         for ep in range(2):
 
@@ -140,10 +139,12 @@ class Trainer:
                 else:
                     size = 16_000
                 print('Processing partial dataset...')
+                total_steps = 1
             else:
                 size = ((self.train_data.size(0)-1) - self.context_length) - \
                     (self.context_length*self.batch_size)
                 print('Processing full dataset...')
+                total_steps = self.epochs
 
             for epoch in range(total_steps):
                 self.model.train()
@@ -166,14 +167,14 @@ class Trainer:
                     loss.backward()
                     self.optimizer.step()
                     hidden = tuple(h.detach() for h in hidden)
-                    losses.append(loss.item())
                     if _ % 8 == 0:
                         description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                         td.set_description(description)
-                        if _ % 128 == 0:
+                        if _ % 256 == 0:
                             create_folder_if_not_exists('graph')
                             plot_loss(losses, 'graph/losses')
-                        if _ % 256 == 0:
+                        if _ % 512 == 0:
+                            losses.append(loss.item())
                             self.save()
 
             self.save()
