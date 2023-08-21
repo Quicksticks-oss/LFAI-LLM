@@ -16,7 +16,7 @@ import os
 
 
 class Inference:
-    def __init__(self, model_path: str, version:int) -> None:
+    def __init__(self, model_path: str, version: int) -> None:
         self.version = version
         self.model_path = Path(model_path)
         self.load_model()
@@ -25,12 +25,13 @@ class Inference:
     def load_model(self):
         data = torch.load(self.model_path, map_location='cpu')
         self.chars = data['chars']
+        self.context_size = data['context_length']
         if self.version == 1:
             self.model = LFAI_LSTM(
                 data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
         else:
             self.model = LFAI_LSTM_V2(
-                data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu')
+                data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.5)
         self.model.load_state_dict(data['state_dict'])
         self.model.eval()
 
@@ -48,29 +49,34 @@ class Inference:
             self.tokenizer.tokens = self.chars
             self.vocab_size = len(self.tokenizer.tokens)
 
-    def run(self, input_data:str):
+    def run(self, input_data: str):
         hidden = self.model.init_hidden(1)
 
         with torch.no_grad():
             if self.version == 1:
-                input_sequence = torch.tensor(self.encode(input_data), dtype=torch.long).unsqueeze(0)
+                input_sequence = torch.tensor(self.encode(
+                    input_data), dtype=torch.long).unsqueeze(0)
             else:
-                input_sequence = torch.tensor(self.tokenizer.encode(input_data), dtype=torch.long).unsqueeze(0)
+                input_sequence = torch.tensor(self.tokenizer.encode(
+                    input_data), dtype=torch.long).unsqueeze(0)
             # Initialize the output sequence with the input sequence
             output_sequence = input_sequence
 
             # Generate the rest of the sequence
-            for _ in range(32):
+            for _ in range(self.context_size):
                 output, hidden = self.model(input_sequence, hidden)
                 output = output[:, -1, :]
                 _, topk = torch.topk(output, 1)
                 input_sequence = topk.squeeze(0).unsqueeze(0)
-                output_sequence = torch.cat((output_sequence, input_sequence), dim=1)
+                output_sequence = torch.cat(
+                    (output_sequence, input_sequence), dim=1)
 
             if self.version == 1:
-                generated_text = self.decode(output_sequence.squeeze().tolist())
+                generated_text = self.decode(
+                    output_sequence.squeeze().tolist())
             else:
-                generated_text = self.tokenizer.decode(output_sequence.squeeze().tolist())
+                generated_text = self.tokenizer.decode(
+                    output_sequence.squeeze().tolist())
             return generated_text, hidden
 
 
@@ -86,5 +92,5 @@ if __name__ == '__main__':
 
     inference = Inference(args.model, int(args.version))
     with open(Path(args.prompt), 'r') as f:
-        output, hidden = inference.run(f.read().replace('\n','\\n'))
-        print(output.replace('\\n','\n'))
+        output, hidden = inference.run(f.read().replace('\n', '\\n'))
+        print(output.replace('\\n', '\n'))
