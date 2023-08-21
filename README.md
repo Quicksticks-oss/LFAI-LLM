@@ -1,12 +1,12 @@
 
 ![Logo](images/banner.png)
 
+[![Online Demo](https://img.shields.io/badge/Online-Inference_Demo-blue)](https://quicksticks-oss.github.io/LFAI/)
+[![Open in colab](https://img.shields.io/badge/Training-Google_Colab-orange)](https://colab.research.google.com/drive/1znKbTH6ORQKMPSknFjpiBtQRd2_l-wZx?usp=sharing)
 
-# LFAI
+# About
 
 This GitHub repository hosts an innovative project featuring an LSTM-based embedding GPT-like neural network. This network is designed to fuse diverse data modalities such as images, audio, sensor inputs, and text, creating a holistic and human-like sentient AI system with the ability to comprehend and respond across multiple data formats.
-
-[Google Training Colab](https://colab.research.google.com/drive/1znKbTH6ORQKMPSknFjpiBtQRd2_l-wZx?usp=sharing)
 
 ## Models
 
