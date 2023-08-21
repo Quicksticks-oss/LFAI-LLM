@@ -1,6 +1,6 @@
 import torch.onnx
-from model.LFAI_LSTM import LFAI_LSTM
-from model.LFAI_LSTM import LFAI_LSTM_V2
+from ..model.LFAI_LSTM import LFAI_LSTM
+from ..model.LFAI_LSTM import LFAI_LSTM_V2
 import argparse
 
 
