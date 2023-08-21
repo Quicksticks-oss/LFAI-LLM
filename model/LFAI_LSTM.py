@@ -31,7 +31,7 @@ class LFAI_LSTM(nn.Module):
     
 # Define the LSTM V2 model.
 class LFAI_LSTM_V2(nn.Module):
-    def __init__(self, vocab_size: int, block_size: int, hidden_size: int, num_layers: int, device: torch.device, dropout_p:int=0.1):
+    def __init__(self, vocab_size: int, block_size: int, hidden_size: int, num_layers: int, device: torch.device=torch.device('cpu'), dropout_p:int=0.1):
         super(LFAI_LSTM_V2, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
