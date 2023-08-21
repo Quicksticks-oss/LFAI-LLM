@@ -68,7 +68,7 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace('\\n', '\n'))
+                    self.text = repr(f.read().replace('\\n', '\n'))[:100000]
         else:
             raise IOError('Dataset does not exist!')
 
@@ -138,10 +138,14 @@ class Trainer:
 
                 self.optimizer.zero_grad()
 
-                outputs, hidden = self.model(inputs_batch, hidden)
-                loss = self.criterion(
-                    outputs.view(-1, self.vocab_size), targets_batch.view(-1))
-
+                if self.version == 1:
+                    outputs, hidden = self.model(inputs_batch, hidden)
+                    loss = self.criterion(
+                        outputs.view(-1, self.vocab_size), targets_batch.view(-1))
+                else:
+                    outputs, hidden = self.model(inputs_batch, hidden)
+                    loss = self.criterion(
+                        outputs.view(-1, self.vocab_size), targets_batch.view(-1))
                 loss.backward()
                 self.optimizer.step()
 
@@ -190,7 +194,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=1,
+    parser.add_argument("--version", default=2,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()
