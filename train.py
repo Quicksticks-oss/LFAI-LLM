@@ -73,7 +73,7 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace('\\n', '\n'))[:5000000]
+                    self.text = repr(f.read().replace('\\n', '\n')) # [:5000000]
         else:
             raise IOError('Dataset does not exist!')
 
