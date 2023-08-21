@@ -30,6 +30,6 @@ if __name__ == '__main__':
     encoded = tokenizer.encode('Hello basic tokenizer.')
     decoded = tokenizer.decode(encoded)
 
-    print(tokenizer.tokens)
-    print(encoded)
-    print(decoded)
+    print(f'Vocab Size: {tokenizer.tokens}')
+    print(f'Encoded: {encoded}')
+    print(f'Decoded: {decoded}')
