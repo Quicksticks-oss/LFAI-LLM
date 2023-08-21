@@ -10,6 +10,7 @@ import argparse
 import datetime
 import random
 import torch
+import time
 import os
 
 # Main trainer class.
@@ -46,14 +47,19 @@ class Trainer:
         return self.params
 
     def get_batch(self, split):
-        # generate a small batch of data of inputs x and targets y
+        # Generate a small batch of data of inputs x and targets y
         size = random.randint(1, self.context_length)
         data = self.train_data if split == 'train' else self.val_data
         ix = torch.randint(len(data) - size, (self.batch_size,))
-        x = torch.stack([data[i:i+size] for i in ix])
-        y = torch.stack([data[i+1:i+size+1] for i in ix])
-        x, y = x.to(self.device), y.to(self.device)
-        return x, y
+        
+        x_slices = [data[i:i+size] for i in ix]
+        y_slices = [data[i+1:i+size+1] for i in ix]
+        
+        x = torch.stack(x_slices)
+        y = torch.stack(y_slices)
+        
+        return x.to(self.device), y.to(self.device)
+
 
     def load_dataset(self):
         if self.dataset.exists():
@@ -68,7 +74,7 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace('\\n', '\n'))
+                    self.text = repr(f.read().replace('\\n', '\n'))[:15000]
         else:
             raise IOError('Dataset does not exist!')
 
@@ -88,6 +94,7 @@ class Trainer:
                 self.tokenizer = Tokenizer()
                 self.tokenizer.load(self.text)
                 self.vocab_size = len(self.tokenizer.tokens)
+            print(f'Vocab size: {self.vocab_size}')
         else:
             raise Exception(
                 'Could now load tokenizer due to lack of data in dataset.')
@@ -96,7 +103,8 @@ class Trainer:
         if self.version == 1:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
         else:
-            self.data = torch.tensor(self.tokenizer.encode(self.text), dtype=torch.long)
+            self.data = torch.tensor(
+                self.tokenizer.encode(self.text), dtype=torch.long)
         n = int(1*len(self.data))  # first 90% will be train, rest val
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
@@ -105,10 +113,10 @@ class Trainer:
     def create_model(self):
         if self.version == 1:
             self.model = LFAI_LSTM(self.vocab_size, self.context_length,
-                                self.hiddensize, self.numlayers, self.device)
+                                   self.hiddensize, self.numlayers, self.device)
         else:
             self.model = LFAI_LSTM_V2(self.vocab_size, self.context_length,
-                                self.hiddensize, self.numlayers, self.device)
+                                      self.hiddensize, self.numlayers, self.device)
         if self.half:
             self.model.half()
         # Loss and optimizer
@@ -117,60 +125,57 @@ class Trainer:
             self.model.parameters(), lr=self.learning_rate)
 
     def train(self):
-        # Training loop
         for epoch in range(self.epochs):
-            self.model.train()  # Puts the model into training mode.
-
-            # Initialize the hidden state.
+            self.model.train()
             hidden = self.model.init_hidden(self.batch_size)
             size = ((self.train_data.size(0)-1) - self.context_length) - \
                 (self.context_length*self.batch_size)
-            td = tqdm(range(0, size), postfix='training... ] ',
-                      dynamic_ncols=True)
+            td = tqdm(range(0, size), postfix='training in progress...', dynamic_ncols=True)
 
             for _ in td:
-                # Gets batch size.
                 inputs_batch, targets_batch = self.get_batch('train')
 
-                if self.half:  # Convert to half
+                if self.half:
                     inputs_batch = inputs_batch.to(torch.int16)
                     targets_batch = targets_batch.to(torch.int16)
 
                 self.optimizer.zero_grad()
-
-                if self.version == 1:
-                    outputs, hidden = self.model(inputs_batch, hidden)
-                    loss = self.criterion(
-                        outputs.view(-1, self.vocab_size), targets_batch.view(-1))
-                else:
-                    outputs, hidden = self.model(inputs_batch, hidden)
-                    loss = self.criterion(
-                        outputs.view(-1, self.vocab_size), targets_batch.view(-1))
+                outputs, hidden = self.model(inputs_batch, hidden)
+                loss = self.criterion(outputs.view(-1, self.vocab_size), targets_batch.view(-1))
                 loss.backward()
                 self.optimizer.step()
-
-                # Detach hidden state to prevent backpropagation through time
                 hidden = tuple(h.detach() for h in hidden)
 
                 if _ % 8 == 0:
-                    description = f'[ epoch: {epoch}, loss: {loss.item():.4f}'
-                    tqdm.set_description(td, desc=description)
+                    description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
+                    td.set_description(description)
                     if _ % 128 == 0:
                         self.save('current')
+
             self.save()
 
     def save(self, name: str = None):
         create_folder_if_not_exists('weights')
         if name == None:
             name = self.save_file
-        save_out = {
-            'vocab_size': self.vocab_size,
-            'context_length': self.context_length,
-            'hidden_size': self.hiddensize,
-            'num_layers': self.numlayers,
-            'chars': self.chars,
-            'state_dict': self.model.state_dict()
-        }
+        if self.version == 1:
+            save_out = {
+                'vocab_size': self.vocab_size,
+                'context_length': self.context_length,
+                'hidden_size': self.hiddensize,
+                'num_layers': self.numlayers,
+                'chars': self.chars,
+                'state_dict': self.model.state_dict()
+            }
+        else:
+            save_out = {
+                'vocab_size': self.vocab_size,
+                'context_length': self.context_length,
+                'hidden_size': self.hiddensize,
+                'num_layers': self.numlayers,
+                'chars': self.tokenizer.tokens,
+                'state_dict': self.model.state_dict()
+            }
         torch.save(save_out, Path('weights').joinpath(name+'.pth'))
 
 
@@ -194,7 +199,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=2,
+    parser.add_argument("--version", default=1,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()

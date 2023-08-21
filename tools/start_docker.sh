@@ -1,1 +1,1 @@
-docker run -it --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "/home/reaktor/LFAI/LFAI/":/var/lib/jenkins/LFAI --device=/dev/kfd --device=/dev/dri --expose 8888 -p 8888:8888 --group-add video --ipc=host --shm-size 8G localbuild-rocm:latest
+docker run -it --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "/home/reaktor/LFAI/LFAI/":/var/lib/jenkins/LFAI --device=/dev/kfd --device=/dev/dri --group-add video --ipc=host --shm-size 8G localbuild-rocm:latest
