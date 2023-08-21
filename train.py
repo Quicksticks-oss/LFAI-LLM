@@ -170,11 +170,11 @@ class Trainer:
                     if _ % 8 == 0:
                         description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                         td.set_description(description)
-                        if _ % 256 == 0:
+                        if _ % 64 == 0:
+                            losses.append(loss.item())
                             create_folder_if_not_exists('graph')
                             plot_loss(losses, 'graph/losses')
                         if _ % 512 == 0:
-                            losses.append(loss.item())
                             self.save()
 
             self.save()

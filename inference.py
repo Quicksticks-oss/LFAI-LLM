@@ -26,6 +26,7 @@ class Inference:
         data = torch.load(self.model_path, map_location='cpu')
         self.chars = data['chars']
         self.context_size = data['context_length']
+        self.vocab_size = data['vocab_size']
         if self.version == 1:
             self.model = LFAI_LSTM(
                 data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
@@ -47,7 +48,7 @@ class Inference:
         else:
             self.tokenizer = Tokenizer()
             self.tokenizer.tokens = self.chars
-            self.vocab_size = len(self.tokenizer.tokens)
+            # = len(self.tokenizer.tokens)
 
     def run(self, input_data: str):
         hidden = self.model.init_hidden(1, inference=True)
