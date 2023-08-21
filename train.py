@@ -141,7 +141,8 @@ class Trainer:
 
                 self.optimizer.zero_grad()
                 outputs, hidden = self.model(inputs_batch, hidden)
-                loss = self.criterion(outputs.view(-1, self.vocab_size), targets_batch.view(-1))
+                loss = self.criterion(
+                    outputs.view(-1, self.vocab_size), targets_batch.view(-1))
                 loss.backward()
                 self.optimizer.step()
                 hidden = tuple(h.detach() for h in hidden)
@@ -165,7 +166,8 @@ class Trainer:
                 'hidden_size': self.hiddensize,
                 'num_layers': self.numlayers,
                 'chars': self.chars,
-                'state_dict': self.model.state_dict()
+                'state_dict': self.model.state_dict(),
+                'version': self.version
             }
         else:
             save_out = {
@@ -174,7 +176,8 @@ class Trainer:
                 'hidden_size': self.hiddensize,
                 'num_layers': self.numlayers,
                 'chars': self.tokenizer.tokens,
-                'state_dict': self.model.state_dict()
+                'state_dict': self.model.state_dict(),
+                'version': self.version
             }
         torch.save(save_out, Path('weights').joinpath(name+'.pth'))
 

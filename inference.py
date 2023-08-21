@@ -64,12 +64,9 @@ class Inference:
                 output, hidden = self.model(input_sequence, hidden)
                 output = output[:, -1, :]
                 _, topk = torch.topk(output, 1)
-                output = topk.squeeze(0).unsqueeze(0)
-                #output = output.view(-1, self.vocab_size)
-                #print(output.shape)
-                output_sequence = torch.cat((output_sequence, output), dim=1)
+                input_sequence = topk.squeeze(0).unsqueeze(0)
+                output_sequence = torch.cat((output_sequence, input_sequence), dim=1)
 
-            print(output_sequence,output)
             if self.version == 1:
                 generated_text = self.decode(output_sequence.squeeze().tolist())
             else:
