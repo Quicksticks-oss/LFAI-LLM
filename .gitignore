@@ -169,3 +169,4 @@ dataset/text.txt
 dataset/books.txt
 vocab.txt
 dataset_checker.py
+graph/losses.png

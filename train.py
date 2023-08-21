@@ -73,7 +73,7 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace('\\n', '\n'))
+                    self.text = repr(f.read().replace('\\n', '\n'))[:5000000]
         else:
             raise IOError('Dataset does not exist!')
 
@@ -130,6 +130,7 @@ class Trainer:
          - Final step: Cover whole dataset.
         '''
         total_steps = int((self.epochs+2)/2)
+        losses = []
         for ep in range(2):
 
             if ep == 0:
@@ -165,10 +166,13 @@ class Trainer:
                     loss.backward()
                     self.optimizer.step()
                     hidden = tuple(h.detach() for h in hidden)
-
+                    losses.append(loss.item())
                     if _ % 8 == 0:
                         description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                         td.set_description(description)
+                        if _ % 128 == 0:
+                            create_folder_if_not_exists('graph')
+                            plot_loss(losses, 'graph/losses')
                         if _ % 256 == 0:
                             self.save()
 
