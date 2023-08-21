@@ -31,7 +31,7 @@ class Inference:
                 data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
         else:
             self.model = LFAI_LSTM_V2(
-                data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.5)
+                data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
         self.model.load_state_dict(data['state_dict'])
         self.model.eval()
 
@@ -50,7 +50,7 @@ class Inference:
             self.vocab_size = len(self.tokenizer.tokens)
 
     def run(self, input_data: str):
-        hidden = self.model.init_hidden(1)
+        hidden = self.model.init_hidden(1, inference=True)
 
         with torch.no_grad():
             if self.version == 1:

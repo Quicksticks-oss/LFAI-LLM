@@ -56,8 +56,13 @@ class LFAI_LSTM_V2(nn.Module):
         output = self.fc(output)
         return output, hidden
 
-    def init_hidden(self, batch_size: int):
+    def init_hidden(self, batch_size: int, inference: bool=False):
         weight = next(self.parameters()).data
-        hidden = (weight.new(self.num_layers, batch_size, self.hidden_size).zero_(),
-                  weight.new(self.num_layers, batch_size, self.hidden_size).zero_())
+        if not inference:
+            hidden = (weight.new(self.num_layers, batch_size, self.hidden_size).zero_(),
+                    weight.new(self.num_layers, batch_size, self.hidden_size).zero_())
+        else:
+            noise = torch.randn(self.num_layers, batch_size, self.hidden_size)  # Generate random noise
+            hidden = (weight.new(self.num_layers, batch_size, self.hidden_size).zero_() + noise,
+                    weight.new(self.num_layers, batch_size, self.hidden_size).zero_() + noise)
         return hidden

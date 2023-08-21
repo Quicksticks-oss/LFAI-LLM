@@ -46,20 +46,19 @@ class Trainer:
         self.save_file = f'{self.name}-{self.params}M-{self.current_date}-{self.numlayers}-{self.hiddensize}-ctx{self.context_length}'
         return self.params
 
-    def get_batch(self, split):
+    def get_batch(self, split:str='train'):
         # Generate a small batch of data of inputs x and targets y
         size = random.randint(1, self.context_length)
         data = self.train_data if split == 'train' else self.val_data
         ix = torch.randint(len(data) - size, (self.batch_size,))
-        
+
         x_slices = [data[i:i+size] for i in ix]
         y_slices = [data[i+1:i+size+1] for i in ix]
-        
+
         x = torch.stack(x_slices)
         y = torch.stack(y_slices)
-        
-        return x.to(self.device), y.to(self.device)
 
+        return x.to(self.device), y.to(self.device)
 
     def load_dataset(self):
         if self.dataset.exists():
@@ -74,7 +73,7 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace('\\n', '\n'))
+                    self.text = repr(f.read().replace('\\n', '\n'))[:500000]
         else:
             raise IOError('Dataset does not exist!')
 
@@ -125,33 +124,53 @@ class Trainer:
             self.model.parameters(), lr=self.learning_rate)
 
     def train(self):
-        for epoch in range(self.epochs):
-            self.model.train()
-            hidden = self.model.init_hidden(self.batch_size)
-            size = ((self.train_data.size(0)-1) - self.context_length) - \
-                (self.context_length*self.batch_size)
-            td = tqdm(range(0, size), postfix='training in progress...', dynamic_ncols=True)
+        '''
+        This is the main training script.
+         - First step: Learn basic language.
+         - Final step: Cover whole dataset.
+        '''
+        total_steps = int((self.epochs+2)/2)
+        for ep in range(2):
 
-            for _ in td:
-                inputs_batch, targets_batch = self.get_batch('train')
+            if ep == 0:
+                if self.train_data.size(0)-1 < 16_000:
+                    size = ((self.train_data.size(0)-1) - self.context_length) - \
+                        (self.context_length*self.batch_size)
+                else:
+                    size = 16_000
+                print('Processing partial dataset...')
+            else:
+                size = ((self.train_data.size(0)-1) - self.context_length) - \
+                    (self.context_length*self.batch_size)
+                print('Processing full dataset...')
 
-                if self.half:
-                    inputs_batch = inputs_batch.to(torch.int16)
-                    targets_batch = targets_batch.to(torch.int16)
+            for epoch in range(total_steps):
+                self.model.train()
+                hidden = self.model.init_hidden(self.batch_size)
 
-                self.optimizer.zero_grad()
-                outputs, hidden = self.model(inputs_batch, hidden)
-                loss = self.criterion(
-                    outputs.view(-1, self.vocab_size), targets_batch.view(-1))
-                loss.backward()
-                self.optimizer.step()
-                hidden = tuple(h.detach() for h in hidden)
+                td = tqdm(range(0, size),
+                          postfix='training in progress...', dynamic_ncols=True)
 
-                if _ % 8 == 0:
-                    description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
-                    td.set_description(description)
-                    if _ % 128 == 0:
-                        self.save('current')
+                for _ in td:
+                    inputs_batch, targets_batch = self.get_batch('train')
+
+                    if self.half:
+                        inputs_batch = inputs_batch.to(torch.int16)
+                        targets_batch = targets_batch.to(torch.int16)
+
+                    self.optimizer.zero_grad()
+                    outputs, hidden = self.model(inputs_batch, hidden)
+                    loss = self.criterion(
+                        outputs.view(-1, self.vocab_size), targets_batch.view(-1))
+                    loss.backward()
+                    self.optimizer.step()
+                    hidden = tuple(h.detach() for h in hidden)
+
+                    if _ % 8 == 0:
+                        description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
+                        td.set_description(description)
+                        if _ % 256 == 0:
+                            self.save()
 
             self.save()
 
@@ -202,7 +221,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=1,
+    parser.add_argument("--version", default=2,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()
