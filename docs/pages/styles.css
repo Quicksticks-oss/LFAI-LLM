@@ -1,5 +1,7 @@
 body{
-    margin: 0;
-    background-color: darkslateblue;
-    text-align: center;
+    margin: 45px;
+    background-color: #17151e;
+    color: #cecece;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
 }
