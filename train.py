@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
+from model.LFAI_LSTM import LFAI_LSTM_V2
 from pathlib import Path
 from tqdm import tqdm
 from utils import *
@@ -14,11 +15,13 @@ import os
 
 
 class Trainer:
-    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False) -> None:
-        self.current_date = str(datetime.datetime.now().date()).replace('-', '')
+    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2) -> None:
+        self.current_date = str(
+            datetime.datetime.now().date()).replace('-', '')
         self.name = name
         self.dataset = Path(dataset)
         self.epochs = epochs
+        self.version = version
         self.batch_size = batch_size
         self.numlayers = numlayers
         self.hiddensize = hiddensize
@@ -43,7 +46,7 @@ class Trainer:
 
     def get_batch(self, split):
         # generate a small batch of data of inputs x and targets y
-        size = random.randint(1,self.context_length)
+        size = random.randint(1, self.context_length)
         data = self.train_data if split == 'train' else self.val_data
         ix = torch.randint(len(data) - size, (self.batch_size,))
         x = torch.stack([data[i:i+size] for i in ix])
@@ -91,8 +94,12 @@ class Trainer:
         del (self.text)
 
     def create_model(self):
-        self.model = LFAI_LSTM(self.vocab_size, self.context_length,
-                               self.hiddensize, self.numlayers, self.device)
+        if self.version == 1:
+            self.model = LFAI_LSTM(self.vocab_size, self.context_length,
+                                self.hiddensize, self.numlayers, self.device)
+        else:
+            self.model = LFAI_LSTM_V2(self.vocab_size, self.context_length,
+                                self.hiddensize, self.numlayers, self.device)
         if self.half:
             self.model.half()
         # Loss and optimizer
@@ -107,7 +114,8 @@ class Trainer:
 
             # Initialize the hidden state.
             hidden = self.model.init_hidden(self.batch_size)
-            size = ((self.train_data.size(0)-1) - self.context_length) - (self.context_length*self.batch_size)
+            size = ((self.train_data.size(0)-1) - self.context_length) - \
+                (self.context_length*self.batch_size)
             td = tqdm(range(0, size), postfix='training... ] ',
                       dynamic_ncols=True)
 
@@ -122,7 +130,6 @@ class Trainer:
                 self.optimizer.zero_grad()
 
                 outputs, hidden = self.model(inputs_batch, hidden)
-                output_flat = outputs.view(-1, self.vocab_size)
                 loss = self.criterion(
                     outputs.view(-1, self.vocab_size), targets_batch.view(-1))
 
@@ -137,7 +144,6 @@ class Trainer:
                     tqdm.set_description(td, desc=description)
                     if _ % 128 == 0:
                         self.save('current')
-            print()
             self.save()
 
     def save(self, name: str = None):
@@ -175,6 +181,8 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
+    parser.add_argument("--version", default=2,
+                        help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()
 
@@ -186,11 +194,12 @@ def main():
     contextsize = int(args.contextsize)
     batch_size = int(args.batchsize)
     learningrate = float(args.learningrate)
+    version = int(args.version)
     half = bool(args.half)
 
     trainer = Trainer(name, dataset, epochs,
                       contextsize, numlayers, hiddensize,
-                      batch_size, learningrate, half)
+                      batch_size, learningrate, half, version)
     print('Loading dataset...')
     trainer.load_dataset()
     trainer.load_tokenizer()
