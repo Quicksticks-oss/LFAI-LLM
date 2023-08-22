@@ -46,7 +46,7 @@ class Trainer:
         self.save_file = f'{self.name}-{self.params}M-{self.current_date}-{self.numlayers}-{self.hiddensize}-ctx{self.context_length}'
         return self.params
 
-    def get_batch(self, split:str='train'):
+    def get_batch(self, split: str = 'train'):
         # Generate a small batch of data of inputs x and targets y
         size = random.randint(1, self.context_length)
         data = self.train_data if split == 'train' else self.val_data
@@ -73,7 +73,8 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace('\\n', '\n')) # [:5000000]
+                    self.text = repr(f.read().replace(
+                        '\\n', '\n'))  # [:7500000]
         else:
             raise IOError('Dataset does not exist!')
 
@@ -173,7 +174,7 @@ class Trainer:
                         if _ % 64 == 0:
                             losses.append(loss.item())
                             create_folder_if_not_exists('graph')
-                            plot_loss(losses, 'graph/losses')
+                            plot_loss(losses[:250], 'graph/losses')
                         if _ % 512 == 0:
                             self.save()
 
