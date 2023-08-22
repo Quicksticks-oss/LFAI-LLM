@@ -74,7 +74,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n'))  # [:10_000_000]
+                        '\\n', '\n')) # [:1_000_000]
         else:
             raise IOError('Dataset does not exist!')
 
@@ -95,6 +95,8 @@ class Trainer:
                 self.tokenizer.load(self.text)
                 self.vocab_size = len(self.tokenizer.tokens)
             print(f'Vocab size: {self.vocab_size}')
+            with open('vocab.txt', 'w+') as f:
+                f.write(str(self.tokenizer.tokens))
         else:
             raise Exception(
                 'Could now load tokenizer due to lack of data in dataset.')
