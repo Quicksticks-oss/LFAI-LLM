@@ -45,7 +45,7 @@ class LFAI_LSTM_V2(nn.Module):
         self.dropout_p = dropout_p
         self.use_half = half
 
-        self.embedding = nn.Embedding(block_size + vocab_size, hidden_size)
+        self.embedding = nn.Embedding(vocab_size, hidden_size)
         self.lstm = nn.LSTM(hidden_size, hidden_size,
                             num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, vocab_size)

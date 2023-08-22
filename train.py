@@ -74,7 +74,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:10000000]
+                        '\\n', '\n'))  # [:10_000_000]
         else:
             raise IOError('Dataset does not exist!')
 
