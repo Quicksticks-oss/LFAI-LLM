@@ -17,8 +17,8 @@ import os
 
 
 class Inference:
-    def __init__(self, model_path: str, version: int) -> None:
-        self.version = version
+    def __init__(self, model_path: str) -> None:
+        self.version = 2
         self.model_path = Path(model_path)
         self.load_model()
         self.load_tokenizer()
@@ -28,6 +28,7 @@ class Inference:
         self.chars = data['chars']
         self.context_size = data['context_length']
         self.vocab_size = data['vocab_size']
+        #self.version = int(data['version'])
         if self.version == 1:
             self.model = LFAI_LSTM(
                 data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
@@ -92,11 +93,9 @@ if __name__ == '__main__':
                         help="Specify a model path.", required=True)
     parser.add_argument("--prompt", default='LFAI',
                         help="Specify a prompt path.", required=True)
-    parser.add_argument("--version", default=2,
-                        help="Specify the model's version.", required=False)
     args = parser.parse_args()
 
-    inference = Inference(args.model, int(args.version))
+    inference = Inference(args.model)
     with open(Path(args.prompt), 'r') as f:
         output, hidden = inference.run(f.read().replace('\n', '\\n'))
         print(output.replace('\\n', '\n'))

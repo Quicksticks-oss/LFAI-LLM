@@ -77,7 +77,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) [:100_000] # Shortens training data for development.
+                        '\\n', '\n')) # [:100_000_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 
@@ -103,7 +103,7 @@ class Trainer:
                 with open('tmp/vocab.txt', 'w+') as f:
                     f.write(self.text[:50_000_000].replace('\\n', '\n'))
                 self.tokenizer = Tokenizer_V2()
-                self.vocab_size = 1024
+                self.vocab_size = 4096
                 self.tokenizer.train([Path('tmp/vocab.txt')], vocab_size=self.vocab_size)
         else:
             raise Exception(
@@ -240,7 +240,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False, type=bool,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=2,
+    parser.add_argument("--version", default=3,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()
