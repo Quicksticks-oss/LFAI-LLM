@@ -170,5 +170,3 @@ dataset/books.txt
 vocab.txt
 dataset_checker.py
 graph/losses.png
-tokenizer_v2/input.txt
-tokenizer_v2/tokenizer.py

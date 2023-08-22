@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from tokenizer_v2.tokenizer import Tokenizer_V2
 from pathlib import Path
 from tqdm import tqdm
 from tokenizer import *
@@ -12,6 +13,7 @@ import random
 import torch
 import time
 import os
+import io
 
 # Main trainer class.
 
@@ -34,6 +36,7 @@ class Trainer:
         self.save_file = f'{name}-{self.params}M-{self.current_date}-{numlayers}-{hiddensize}-ctx{context_length}'
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
+        self.ds_files = []
         self.vocab_size = 0
         self.chars = None
         self.model = None
@@ -74,13 +77,13 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:1_000_000]
+                        '\\n', '\n')) # [:20_000_000]
         else:
             raise IOError('Dataset does not exist!')
 
     def load_tokenizer(self):
         if len(self.text) > 0:
-            if self.version == 1:
+            if self.version == 0:
                 self.chars = sorted(list(set(self.text)))
                 self.vocab_size = len(self.chars)
                 # Create a mapping from characters to integers
@@ -90,21 +93,29 @@ class Trainer:
                 self.encode = lambda s: [stoi[c] for c in s]
                 # decoder: take a list of integers, output a string
                 self.decode = lambda l: ''.join([itos[i] for i in l])
-            else:
+            elif self.version == 1:
                 self.tokenizer = Tokenizer()
                 self.tokenizer.load(self.text)
                 self.vocab_size = len(self.tokenizer.tokens)
-            print(f'Vocab size: {self.vocab_size}')
-            with open('vocab.txt', 'w+') as f:
-                f.write(str(self.tokenizer.tokens))
+                print(f'Vocab size: {self.vocab_size}')
+            elif self.version == 2:
+                create_folder_if_not_exists('tmp')
+                with open('tmp/vocab.txt', 'w+') as f:
+                    f.write(self.text[:50_000_000].replace('\\n', '\n'))
+                self.tokenizer = Tokenizer_V2()
+                self.vocab_size = 16000
+                self.tokenizer.train([Path('tmp/vocab.txt')], vocab_size=self.vocab_size)
+            #print(f'Vocab size: {self.vocab_size}')
+            #with open('vocab.txt', 'w+') as f:
+            #    f.write(str(self.tokenizer.tokens))
         else:
             raise Exception(
                 'Could now load tokenizer due to lack of data in dataset.')
 
     def convert_dataset(self):
-        if self.version == 1:
+        if self.version == 0:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
-        else:
+        elif self.version == 1 or self.version == 2:
             self.data = torch.tensor(
                 self.tokenizer.encode(self.text), dtype=torch.long)
         n = int(1*len(self.data))  # first 90% will be train, rest val
@@ -113,7 +124,7 @@ class Trainer:
         del (self.text)
 
     def create_model(self):
-        if self.version == 1:
+        if self.version == 0:
             self.model = LFAI_LSTM(self.vocab_size, self.context_length,
                                    self.hiddensize, self.numlayers, self.device)
         else:
@@ -131,27 +142,39 @@ class Trainer:
 
     def train(self):
         losses = []
+
         size = ((self.train_data.size(0)-1) - self.context_length) - \
             (self.context_length*self.batch_size)
+        
         print('Processing full dataset...')
+
         for epoch in range(self.epochs):
+
             self.model.train()
             hidden = self.model.init_hidden(self.batch_size)
             td = tqdm(range(0, size), dynamic_ncols=True)
+
             for _ in td:
                 inputs_batch, targets_batch = self.get_batch('train')
+
                 if self.half:
                     inputs_batch = inputs_batch.to(
                         torch.int16).to(torch.long)
                     targets_batch = targets_batch.to(
                         torch.int16).to(torch.long)
+                
                 self.optimizer.zero_grad()
+                
                 outputs, hidden = self.model(inputs_batch, hidden)
+
                 loss = self.criterion(
                     outputs.view(-1, self.vocab_size), targets_batch.view(-1))
+            
                 loss.backward()
                 self.optimizer.step()
+
                 hidden = tuple(h.detach() for h in hidden)
+
                 if _ % 8 == 0:
                     description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                     td.set_description(description)
@@ -167,7 +190,7 @@ class Trainer:
         create_folder_if_not_exists('weights')
         if name == None:
             name = self.save_file
-        if self.version == 1:
+        if self.version == 0:
             save_out = {
                 'vocab_size': self.vocab_size,
                 'context_length': self.context_length,
@@ -177,13 +200,23 @@ class Trainer:
                 'state_dict': self.model.state_dict(),
                 'version': self.version
             }
-        else:
+        elif self.version == 1:
             save_out = {
                 'vocab_size': self.vocab_size,
                 'context_length': self.context_length,
                 'hidden_size': self.hiddensize,
                 'num_layers': self.numlayers,
                 'chars': self.tokenizer.tokens,
+                'state_dict': self.model.state_dict(),
+                'version': self.version
+            }
+        else:
+            save_out = {
+                'vocab_size': self.vocab_size,
+                'context_length': self.context_length,
+                'hidden_size': self.hiddensize,
+                'num_layers': self.numlayers,
+                'chars': self.tokenizer.model.getvalue(),
                 'state_dict': self.model.state_dict(),
                 'version': self.version
             }
