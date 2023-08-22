@@ -28,7 +28,7 @@ class Inference:
         self.chars = data['chars']
         self.context_size = data['context_length']
         self.vocab_size = data['vocab_size']
-        #self.version = int(data['version'])
+        self.version = int(data['version'])
         if self.version == 1:
             self.model = LFAI_LSTM(
                 data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
@@ -83,7 +83,7 @@ class Inference:
             else:
                 generated_text = self.tokenizer.decode(
                     output_sequence.squeeze().tolist())
-            print(output_sequence.squeeze().tolist())
+            
             return generated_text, hidden
 
 
