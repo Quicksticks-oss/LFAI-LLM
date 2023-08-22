@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from tokenizer_v2.tokenizer import Tokenizer_V2
 from pathlib import Path
 from tokenizer import *
 from tqdm import tqdm
@@ -37,7 +38,7 @@ class Inference:
         self.model.eval()
 
     def load_tokenizer(self):
-        if self.version == 1:
+        if self.version == 0:
             # Create a mapping from characters to integers
             stoi = {ch: i for i, ch in enumerate(self.chars)}
             itos = {i: ch for i, ch in enumerate(self.chars)}
@@ -45,16 +46,19 @@ class Inference:
             self.encode = lambda s: [stoi[c] for c in s]
             # decoder: take a list of integers, output a string
             self.decode = lambda l: ''.join([itos[i] for i in l])
-        else:
+        elif self.version == 1:
             self.tokenizer = Tokenizer()
             self.tokenizer.tokens = self.chars
             # = len(self.tokenizer.tokens)
+        elif self.version == 2:
+            self.tokenizer = Tokenizer_V2()
+            self.tokenizer.load(self.chars)
 
     def run(self, input_data: str):
         hidden = self.model.init_hidden(1, inference=True)
 
         with torch.no_grad():
-            if self.version == 1:
+            if self.version == 0:
                 input_sequence = torch.tensor(self.encode(
                     input_data), dtype=torch.long).unsqueeze(0)
             else:
@@ -72,7 +76,7 @@ class Inference:
                 output_sequence = torch.cat(
                     (output_sequence, input_sequence), dim=1)
 
-            if self.version == 1:
+            if self.version == 0:
                 generated_text = self.decode(
                     output_sequence.squeeze().tolist())
             else:
