@@ -38,7 +38,7 @@ class Inference:
         self.model.eval()
 
     def load_tokenizer(self):
-        if self.version == 0:
+        if self.version == 1:
             # Create a mapping from characters to integers
             stoi = {ch: i for i, ch in enumerate(self.chars)}
             itos = {i: ch for i, ch in enumerate(self.chars)}
@@ -46,11 +46,11 @@ class Inference:
             self.encode = lambda s: [stoi[c] for c in s]
             # decoder: take a list of integers, output a string
             self.decode = lambda l: ''.join([itos[i] for i in l])
-        elif self.version == 1:
+        elif self.version == 2:
             self.tokenizer = Tokenizer()
             self.tokenizer.tokens = self.chars
             # = len(self.tokenizer.tokens)
-        elif self.version == 2:
+        elif self.version == 3:
             self.tokenizer = Tokenizer_V2()
             self.tokenizer.load(self.chars)
 
@@ -58,7 +58,7 @@ class Inference:
         hidden = self.model.init_hidden(1, inference=True)
 
         with torch.no_grad():
-            if self.version == 0:
+            if self.version == 1:
                 input_sequence = torch.tensor(self.encode(
                     input_data), dtype=torch.long).unsqueeze(0)
             else:
@@ -76,12 +76,13 @@ class Inference:
                 output_sequence = torch.cat(
                     (output_sequence, input_sequence), dim=1)
 
-            if self.version == 0:
+            if self.version == 1:
                 generated_text = self.decode(
                     output_sequence.squeeze().tolist())
             else:
                 generated_text = self.tokenizer.decode(
                     output_sequence.squeeze().tolist())
+            print(output_sequence.squeeze().tolist())
             return generated_text, hidden
 
 

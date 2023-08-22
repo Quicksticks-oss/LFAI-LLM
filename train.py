@@ -77,13 +77,13 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:200_000] # Shortens training data for development.
+                        '\\n', '\n')) [:100_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 
     def load_tokenizer(self):
         if len(self.text) > 0:
-            if self.version == 0:
+            if self.version == 1:
                 self.chars = sorted(list(set(self.text)))
                 self.vocab_size = len(self.chars)
                 # Create a mapping from characters to integers
@@ -93,26 +93,26 @@ class Trainer:
                 self.encode = lambda s: [stoi[c] for c in s]
                 # decoder: take a list of integers, output a string
                 self.decode = lambda l: ''.join([itos[i] for i in l])
-            elif self.version == 1:
+            elif self.version == 2:
                 self.tokenizer = Tokenizer()
                 self.tokenizer.load(self.text)
                 self.vocab_size = len(self.tokenizer.tokens)
                 print(f'Vocab size: {self.vocab_size}')
-            elif self.version == 2:
+            elif self.version == 3:
                 create_folder_if_not_exists('tmp')
                 with open('tmp/vocab.txt', 'w+') as f:
                     f.write(self.text[:50_000_000].replace('\\n', '\n'))
                 self.tokenizer = Tokenizer_V2()
-                self.vocab_size = 4096
+                self.vocab_size = 1024
                 self.tokenizer.train([Path('tmp/vocab.txt')], vocab_size=self.vocab_size)
         else:
             raise Exception(
                 'Could now load tokenizer due to lack of data in dataset.')
 
     def convert_dataset(self):
-        if self.version == 0:
+        if self.version == 1:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
-        elif self.version == 1 or self.version == 2:
+        else:
             self.data = torch.tensor(
                 self.tokenizer.encode(self.text), dtype=torch.long)
         n = int(1*len(self.data))  # first 90% will be train, rest val
@@ -121,7 +121,7 @@ class Trainer:
         del (self.text)
 
     def create_model(self):
-        if self.version == 0:
+        if self.version == 1:
             self.model = LFAI_LSTM(self.vocab_size, self.context_length,
                                    self.hiddensize, self.numlayers, self.device)
         else:
@@ -187,7 +187,7 @@ class Trainer:
         create_folder_if_not_exists('weights')
         if name == None:
             name = self.save_file
-        if self.version == 0:
+        if self.version == 1:
             save_out = {
                 'vocab_size': self.vocab_size,
                 'context_length': self.context_length,
@@ -197,7 +197,7 @@ class Trainer:
                 'state_dict': self.model.state_dict(),
                 'version': self.version
             }
-        elif self.version == 1:
+        elif self.version == 2:
             save_out = {
                 'vocab_size': self.vocab_size,
                 'context_length': self.context_length,
@@ -207,7 +207,7 @@ class Trainer:
                 'state_dict': self.model.state_dict(),
                 'version': self.version
             }
-        else:
+        elif self.version == 3:
             save_out = {
                 'vocab_size': self.vocab_size,
                 'context_length': self.context_length,
