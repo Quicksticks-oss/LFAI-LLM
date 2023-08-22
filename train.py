@@ -43,6 +43,12 @@ class Trainer:
         self.text = None
         self.data = None
 
+    def encode_and_combine_chunks(self, chunk_size=10000000):
+        chunks = [self.text[i:i+chunk_size] for i in range(0, len(self.text), chunk_size)]
+        encoded_chunks = [self.tokenizer.encode(chunk) for chunk in chunks]
+        combined_data = torch.tensor([val for chunk in encoded_chunks for val in chunk], dtype=torch.long)
+        return combined_data
+
     def count_parameters(self):
         self.params = round(sum(p.numel()
                             for p in self.model.parameters()) / 1_000_000, 2)
@@ -77,7 +83,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:100_000_000] # Shortens training data for development.
+                        '\\n', '\n')) # [:1_000_000_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 
@@ -113,8 +119,7 @@ class Trainer:
         if self.version == 1:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
         else:
-            self.data = torch.tensor(
-                self.tokenizer.encode(self.text), dtype=torch.long)
+            self.data = self.encode_and_combine_chunks()#torch.tensor(self.tokenizer.encode(self.text), dtype=torch.long)
         n = int(1*len(self.data))  # first 90% will be train, rest val
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
@@ -180,7 +185,7 @@ class Trainer:
                     if _ % 512 == 0:
                         self.save()
                         create_folder_if_not_exists('graph')
-                        plot_loss(losses[:50], 'graph/losses')
+                        plot_loss(losses[:50], 'graph/losses-'+self.name)
         self.save()
 
     def save(self, name: str = None):

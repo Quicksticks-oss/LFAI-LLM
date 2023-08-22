@@ -170,3 +170,5 @@ dataset/books.txt
 vocab.txt
 dataset_checker.py
 graph/losses.png
+graph/losses-LFAI.png
+graph/lossesLFAI-books.png
