@@ -2,7 +2,7 @@ import re
 from collections import Counter
 
 
-class Tokenizer:
+class Tokenizer_V1:
     def __init__(self) -> None:
         self.tokens = {}
 

@@ -2,14 +2,12 @@ import re
 from collections import Counter
 
 
-class Tokenizer:
+class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
         self.token_pattern = re.compile(r'\b\w+\b|[.,!?;]|[ \t\n\r\f\v]')
 
-    def load(self, text: str, maxtokenlength:int=3) -> None:
-        self.mtl = maxtokenlength
-        self.tokens[self.mtl] = self.mtl
+    def load(self, text: str) -> None:
         words = self.token_pattern.findall(text)
         tokens = [word[i:i+3] for word in words if len(word) > 3 for i in range(0, len(word), 3)] + [word for word in words if len(word) <= 3]
 
@@ -46,16 +44,16 @@ class Tokenizer:
 
 if __name__ == '__main__':
     # Example usage
-    input_text = """Hello, world! This is a basic super basic tokenizer."""
+    input_text = """Hello, world! This is a basic super basic sub word tokenizer."""
     tokenizer = Tokenizer()
     tokenizer.load(input_text)
 
-    tokenize = 'Hello world basic tokenizer.'
+    tokenize = 'Hello world basic sub tokenizer.'
     encoded = tokenizer.encode(tokenize)
     decoded = tokenizer.decode(encoded)
 
     print(len(encoded), len(tokenize))
 
-    print(f'Vocab Size: {tokenizer.tokens}')
+    print(f'Vocab Size: {len(tokenizer.tokens)}')
     print(f'Encoded: {encoded}')
     print(f'Decoded: {decoded}')

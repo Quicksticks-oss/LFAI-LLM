@@ -1,9 +1,9 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
-from tokenizer_v2.tokenizer import Tokenizer_V2
+from tokenizers.tokenizer_v2 import Tokenizer_V2
+from tokenizers.tokenizer_v1 import Tokenizer_V1
 from pathlib import Path
-from tokenizer import *
 from tqdm import tqdm
 from utils import *
 import torch.nn as nn
