@@ -40,11 +40,13 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 
 ## Roadmap
 
-- Public Models
+- Train More Public Models
 
 - Additional networks like GRU
 
-- Use last token as new token in inference
+- Add online model inference.
+
+- ~~Use last token as new token in inference~~
 
 - Add more integrations
 
