@@ -240,7 +240,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False, type=bool,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=3,
+    parser.add_argument("--version", default=2,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()
