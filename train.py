@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from tokenizers.tokenizer_v3 import Tokenizer_V3
 from tokenizers.tokenizer_v2 import Tokenizer_V2
 from tokenizers.tokenizer_v1 import Tokenizer_V1
 from pathlib import Path
@@ -83,7 +84,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:1_000_000_000] # Shortens training data for development.
+                        '\\n', '\n')) [:1_000_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 
@@ -100,7 +101,7 @@ class Trainer:
                 # decoder: take a list of integers, output a string
                 self.decode = lambda l: ''.join([itos[i] for i in l])
             elif self.version == 2:
-                self.tokenizer = Tokenizer()
+                self.tokenizer = Tokenizer_V1()
                 self.tokenizer.load(self.text)
                 self.vocab_size = len(self.tokenizer.tokens)
                 print(f'Vocab size: {self.vocab_size}')
@@ -111,6 +112,13 @@ class Trainer:
                 self.tokenizer = Tokenizer_V2()
                 self.vocab_size = 4096
                 self.tokenizer.train([Path('tmp/vocab.txt')], vocab_size=self.vocab_size)
+            elif self.version == 4:
+                self.tokenizer = Tokenizer_V3()
+                self.tokenizer.load(self.text)
+                self.vocab_size = len(self.tokenizer.tokens)
+                with open('tokens.txt', 'w+') as f:
+                    f.write(str(self.tokenizer.tokens))
+            print(f'Loaded {self.vocab_size} tokens.')
         else:
             raise Exception(
                 'Could now load tokenizer due to lack of data in dataset.')
@@ -118,8 +126,10 @@ class Trainer:
     def convert_dataset(self):
         if self.version == 1:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
-        else:
-            self.data = self.encode_and_combine_chunks()#torch.tensor(self.tokenizer.encode(self.text), dtype=torch.long)
+        elif self.version == 2 or self.version == 4:
+            self.data = torch.tensor(self.tokenizer.encode(self.text), dtype=torch.long)
+        elif self.version == 3:
+            self.data = self.encode_and_combine_chunks()
         n = int(1*len(self.data))  # first 90% will be train, rest val
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
@@ -202,7 +212,7 @@ class Trainer:
                 'state_dict': self.model.state_dict(),
                 'version': self.version
             }
-        elif self.version == 2:
+        elif self.version == 2 or self.version == 4:
             save_out = {
                 'vocab_size': self.vocab_size,
                 'context_length': self.context_length,
@@ -245,7 +255,7 @@ def main():
                         help="Specify how confident the model will be in itself.", required=False)
     parser.add_argument("--half", default=False, type=bool,
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
-    parser.add_argument("--version", default=2,
+    parser.add_argument("--version", default=4,
                         help="Specify what version of the model.", required=False)
 
     args = parser.parse_args()

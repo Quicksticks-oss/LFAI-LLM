@@ -6,10 +6,11 @@ class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
         self.token_pattern = re.compile(r'\b\w+\b|[.,!?;]|[ \t\n\r\f\v]')
+        self.max_n_count = 2
 
     def load(self, text: str) -> None:
         words = self.token_pattern.findall(text)
-        tokens = [word[i:i+3] for word in words if len(word) > 3 for i in range(0, len(word), 3)] + [word for word in words if len(word) <= 3]
+        tokens = [word[i:i+self.max_n_count] for word in words if len(word) > self.max_n_count for i in range(0, len(word), self.max_n_count)] + [word for word in words if len(word) <= self.max_n_count]
 
         token_counts = Counter(tokens)
         for index, (token, _) in enumerate(token_counts.most_common()):
@@ -19,8 +20,8 @@ class Tokenizer_V3:
         words = self.token_pattern.findall(text)
         tokens = []
         for word in words:
-            if len(word) > 3:
-                chunks = [word[i:i+3] for i in range(0, len(word), 3)]
+            if len(word) > self.max_n_count:
+                chunks = [word[i:i+self.max_n_count] for i in range(0, len(word), self.max_n_count)]
                 tokens.extend(chunks)
             else:
                 tokens.append(word)
@@ -33,8 +34,8 @@ class Tokenizer_V3:
         
         decoded_text = ""
         for token in decoded_tokens:
-            if len(token) > 3:
-                chunks = [token[i:i+3] for i in range(0, len(token), 3)]
+            if len(token) > self.max_n_count:
+                chunks = [token[i:i+self.max_n_count] for i in range(0, len(token), self.max_n_count)]
                 decoded_text += "".join(chunks)
             else:
                 decoded_text += token

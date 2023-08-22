@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from tokenizers.tokenizer_v3 import Tokenizer_V3
 from tokenizers.tokenizer_v2 import Tokenizer_V2
 from tokenizers.tokenizer_v1 import Tokenizer_V1
 from pathlib import Path
@@ -48,12 +49,15 @@ class Inference:
             # decoder: take a list of integers, output a string
             self.decode = lambda l: ''.join([itos[i] for i in l])
         elif self.version == 2:
-            self.tokenizer = Tokenizer()
+            self.tokenizer = Tokenizer_V1()
             self.tokenizer.tokens = self.chars
             # = len(self.tokenizer.tokens)
         elif self.version == 3:
             self.tokenizer = Tokenizer_V2()
             self.tokenizer.load(self.chars)
+        elif self.version == 4:
+            self.tokenizer = Tokenizer_V3()
+            self.tokenizer.tokens = self.chars
 
     def run(self, input_data: str):
         hidden = self.model.init_hidden(1, inference=True)
