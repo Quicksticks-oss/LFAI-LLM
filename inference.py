@@ -54,8 +54,10 @@ class Inference:
             self.tokenizer = Tokenizer_V3()
             self.tokenizer.tokens = self.chars
 
-    def run(self, input_data: str):
+    def run(self, input_data: str, ending_criterion:str=None):
         hidden = self.model.init_hidden(1, inference=True)
+        if ending_criterion != None:
+            ending_criterion = self.tokenizer.encode(ending_criterion)[0]
 
         with torch.no_grad():
             if self.version == 1:
@@ -65,8 +67,6 @@ class Inference:
                 input_sequence = torch.tensor(self.tokenizer.encode(
                     input_data), dtype=torch.long).unsqueeze(0)
                 
-
-            print(input_sequence.squeeze(0).shape)
             # Initialize the output sequence with the input sequence
             output_sequence = input_sequence
 
@@ -76,8 +76,9 @@ class Inference:
                 output = output[:, -1, :]
                 _, topk = torch.topk(output, 1)
                 input_sequence = topk.squeeze(0).unsqueeze(0)
-                output_sequence = torch.cat(
-                    (output_sequence, input_sequence), dim=1)
+                output_sequence = torch.cat((output_sequence, input_sequence), dim=1)
+                if input_sequence.item() == ending_criterion:
+                    break
 
             if self.version == 1:
                 generated_text = self.decode(
@@ -94,9 +95,11 @@ if __name__ == '__main__':
                         help="Specify a model path.", required=True)
     parser.add_argument("--prompt", default='LFAI',
                         help="Specify a prompt path.", required=True)
+    parser.add_argument("--endingcriterion", default=None,
+                        help="Specify a ending criterion string.", required=False)
     args = parser.parse_args()
 
     inference = Inference(args.model)
     with open(Path(args.prompt), 'r') as f:
-        output, hidden = inference.run(f.read().replace('\n', '\\n'))
+        output, hidden = inference.run(f.read().replace('\n', '\\n'), args.endingcriterion)
         print(output.replace('\\n', '\n'))
