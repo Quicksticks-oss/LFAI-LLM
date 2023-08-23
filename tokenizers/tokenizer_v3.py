@@ -5,7 +5,7 @@ class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
         self.token_pattern = re.compile(r'\b\w+\b|[.,*!?;:]|[ \t\n\r\f\v]')
-        self.max_n_count = 1
+        self.max_n_count = 2
 
     def _find_words(self ,text:str):
         words = self.token_pattern.findall(repr(text).replace('\\n', '\n'))
@@ -20,9 +20,8 @@ class Tokenizer_V3:
 
     def load(self, text: str) -> None:
         token_counts = Counter(self._find_words(text))
-        self.tokens['\\'] = 0
         for index, (token, _) in enumerate(token_counts.most_common()):
-            self.tokens[token] = index+1
+            self.tokens[token] = index
 
     def encode(self, text: str) -> str:
         tokens = self._find_words(text)

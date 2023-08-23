@@ -5,6 +5,7 @@ from collections import Counter
 class Tokenizer_V1:
     def __init__(self) -> None:
         self.tokens = {}
+        self.max_n_count = 0
 
     def load(self, text: str) -> None:
         token_pattern = re.compile(r'\b\w+\b|[.,!?;]|[ \t\n\r\f\v]')
