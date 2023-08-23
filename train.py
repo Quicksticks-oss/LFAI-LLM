@@ -20,7 +20,7 @@ import io
 
 
 class Trainer:
-    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2) -> None:
+    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2, load:str="") -> None:
         self.current_date = str(
             datetime.datetime.now().date()).replace('-', '')
         self.name = name
@@ -40,6 +40,7 @@ class Trainer:
         print(f'Using device: {self.device}')
         self.ds_files = []
         self.vocab_size = 0
+        self.load = load
         self.chars = None
         self.model = None
         self.text = None
@@ -141,6 +142,12 @@ class Trainer:
         else:
             self.model = LFAI_LSTM_V2(self.vocab_size, self.context_length,
                                       self.hiddensize, self.numlayers, self.device, half=self.half)
+        
+        if len(self.load) > 0:
+            data = torch.load(self.load, map_location=self.device)
+            self.model.load_state_dict(data['state_dict'])
+
+        
         # Loss and optimizer
         self.criterion = nn.CrossEntropyLoss().to(device=self.device)
 
@@ -242,11 +249,11 @@ def main():
                         help="Specify how many epochs the model should train with.", required=False)
     parser.add_argument("--dataset", default='input.txt',
                         help="Specify the dataset the model will train on, this can be a file or folder.", required=True)
-    parser.add_argument("--numlayers", default=6,
+    parser.add_argument("--numlayers", default=4,
                         help="Specify how many layers the rnn layer will have.", required=False)
-    parser.add_argument("--hiddensize", default=128,
+    parser.add_argument("--hiddensize", default=96,
                         help="Specify how large the hidden layer size will be.", required=False)
-    parser.add_argument("--contextsize", default=256,
+    parser.add_argument("--contextsize", default=96,
                         help="Specify the max length of the input context field.", required=False)
     parser.add_argument("--batchsize", default=16,
                         help="Specify how much data will be passed at one time.", required=False)
@@ -256,6 +263,8 @@ def main():
                         help="Specify if the model should use fp16 (Only for GPU).", required=False)
     parser.add_argument("--version", default=4,
                         help="Specify what version of the model.", required=False)
+    parser.add_argument("--load", default="",
+                        help="Specify a premade model to load.", required=False)
 
     args = parser.parse_args()
 
@@ -269,10 +278,11 @@ def main():
     learningrate = float(args.learningrate)
     version = int(args.version)
     half = bool(args.half)
+    load = str(args.load)
 
     trainer = Trainer(name, dataset, epochs,
                       contextsize, numlayers, hiddensize,
-                      batch_size, learningrate, half, version)
+                      batch_size, learningrate, half, version, load)
     print('Loading dataset...')
     trainer.load_dataset()
     print('Loading tokenizer...')

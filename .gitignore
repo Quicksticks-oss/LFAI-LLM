@@ -175,3 +175,5 @@ graph/lossesLFAI-books.png
 dataset/dataset.txt
 .gitignore
 graph/losses-LFAI-chat.png
+graph/losses-completed-chat.png
+graph/losses-LFAI-chat-pg.png

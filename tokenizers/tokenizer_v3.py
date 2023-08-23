@@ -5,7 +5,7 @@ class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
         self.token_pattern = re.compile(r'\b\w+\b|[.,*!?;:]|[ \t\n\r\f\v]')
-        self.max_n_count = 4
+        self.max_n_count = 1
 
     def _find_words(self ,text:str):
         words = self.token_pattern.findall(repr(text).replace('\\n', '\n'))
@@ -52,7 +52,7 @@ test 123"""
     tokenizer.load(input_text)
 
     tokenize = '''Hello world basic sub tokenizer.
-12'''
+123'''
     encoded = tokenizer.encode(tokenize)
     decoded = tokenizer.decode(encoded)
     print(len(encoded), len(tokenize))
