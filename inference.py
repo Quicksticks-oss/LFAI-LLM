@@ -82,7 +82,6 @@ class Inference:
             else:
                 generated_text = self.tokenizer.decode(
                     output_sequence.squeeze().tolist())
-            print(len(output_sequence.squeeze().tolist()))
             return generated_text, hidden
 
 

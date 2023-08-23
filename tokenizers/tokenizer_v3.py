@@ -4,11 +4,11 @@ from collections import Counter
 class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
-        self.token_pattern = re.compile(r'\b\w+\b|[.,!?;]|[ \t\n\r\f\v]')
-        self.max_n_count = 2
+        self.token_pattern = re.compile(r'\b\w+\b|[.,!?;:]|[ \t\n\r\f\v]')
+        self.max_n_count = 1
 
     def _find_words(self ,text:str):
-        words = self.token_pattern.findall(text)
+        words = self.token_pattern.findall(repr(text).replace('\\n', '\n'))
         tokens = []
         for word in words:
             if len(word) > self.max_n_count:
@@ -20,8 +20,9 @@ class Tokenizer_V3:
 
     def load(self, text: str) -> None:
         token_counts = Counter(self._find_words(text))
+        self.tokens['\\'] = 0
         for index, (token, _) in enumerate(token_counts.most_common()):
-            self.tokens[token] = index
+            self.tokens[token] = index+1
 
     def encode(self, text: str) -> str:
         tokens = self._find_words(text)
@@ -45,16 +46,16 @@ class Tokenizer_V3:
 
 if __name__ == '__main__':
     # Example usage
-    input_text = """Hello, world! This is a basic super basic sub word tokenizer."""
-    tokenizer = Tokenizer()
+    input_text = """Hello, world! This is a basic super basic sub word tokenizer.
+test 123"""
+    tokenizer = Tokenizer_V3()
     tokenizer.load(input_text)
 
-    tokenize = 'Hello world basic sub tokenizer.'
+    tokenize = '''Hello world basic sub tokenizer.
+12'''
     encoded = tokenizer.encode(tokenize)
     decoded = tokenizer.decode(encoded)
-
     print(len(encoded), len(tokenize))
-
     print(f'Vocab Size: {len(tokenizer.tokens)}')
-    print(f'Encoded: {encoded}')
-    print(f'Decoded: {decoded}')
+    print(f'Encoded: {repr(encoded)}')
+    print(f'Decoded: {repr(decoded)}')
