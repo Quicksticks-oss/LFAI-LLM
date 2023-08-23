@@ -226,7 +226,8 @@ class Trainer:
                 'num_layers': self.numlayers,
                 'chars': self.tokenizer.tokens,
                 'state_dict': self.model.state_dict(),
-                'version': self.version
+                'version': self.version,
+                'max_n_count': self.tokenizer.max_n_count
             }
         elif self.version == 3:
             save_out = {
