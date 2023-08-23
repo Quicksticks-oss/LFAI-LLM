@@ -85,7 +85,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:1_000_000] # Shortens training data for development.
+                        '\\n', '\n')) # [:10_000_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 

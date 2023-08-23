@@ -64,6 +64,9 @@ class Inference:
             else:
                 input_sequence = torch.tensor(self.tokenizer.encode(
                     input_data), dtype=torch.long).unsqueeze(0)
+                
+
+            print(input_sequence.squeeze(0).shape)
             # Initialize the output sequence with the input sequence
             output_sequence = input_sequence
 

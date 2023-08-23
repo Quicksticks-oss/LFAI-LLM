@@ -4,8 +4,8 @@ from collections import Counter
 class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
-        self.token_pattern = re.compile(r'\b\w+\b|[.,!?;:]|[ \t\n\r\f\v]')
-        self.max_n_count = 1
+        self.token_pattern = re.compile(r'\b\w+\b|[.,*!?;:]|[ \t\n\r\f\v]')
+        self.max_n_count = 4
 
     def _find_words(self ,text:str):
         words = self.token_pattern.findall(repr(text).replace('\\n', '\n'))
