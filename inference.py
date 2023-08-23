@@ -5,14 +5,9 @@ from tokenizers.tokenizer_v3 import Tokenizer_V3
 from tokenizers.tokenizer_v2 import Tokenizer_V2
 from tokenizers.tokenizer_v1 import Tokenizer_V1
 from pathlib import Path
-from tqdm import tqdm
-from utils import *
 import torch.nn as nn
 import argparse
-import datetime
-import random
 import torch
-import os
 
 # Main inference class.
 
@@ -87,7 +82,7 @@ class Inference:
             else:
                 generated_text = self.tokenizer.decode(
                     output_sequence.squeeze().tolist())
-            
+            print(len(output_sequence.squeeze().tolist()))
             return generated_text, hidden
 
 

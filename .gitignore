@@ -172,3 +172,6 @@ dataset_checker.py
 graph/losses.png
 graph/losses-LFAI.png
 graph/lossesLFAI-books.png
+dataset/dataset.txt
+.gitignore
+graph/losses-LFAI-chat.png

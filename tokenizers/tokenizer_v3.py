@@ -1,22 +1,13 @@
 import re
 from collections import Counter
 
-
 class Tokenizer_V3:
     def __init__(self) -> None:
         self.tokens = {}
         self.token_pattern = re.compile(r'\b\w+\b|[.,!?;]|[ \t\n\r\f\v]')
         self.max_n_count = 2
 
-    def load(self, text: str) -> None:
-        words = self.token_pattern.findall(text)
-        tokens = [word[i:i+self.max_n_count] for word in words if len(word) > self.max_n_count for i in range(0, len(word), self.max_n_count)] + [word for word in words if len(word) <= self.max_n_count]
-
-        token_counts = Counter(tokens)
-        for index, (token, _) in enumerate(token_counts.most_common()):
-            self.tokens[token] = index
-
-    def encode(self, text: str) -> str:
+    def _find_words(self ,text:str):
         words = self.token_pattern.findall(text)
         tokens = []
         for word in words:
@@ -25,6 +16,15 @@ class Tokenizer_V3:
                 tokens.extend(chunks)
             else:
                 tokens.append(word)
+        return tokens
+
+    def load(self, text: str) -> None:
+        token_counts = Counter(self._find_words(text))
+        for index, (token, _) in enumerate(token_counts.most_common()):
+            self.tokens[token] = index
+
+    def encode(self, text: str) -> str:
+        tokens = self._find_words(text)
         encoded_text = [self.tokens[token] for token in tokens]
         return encoded_text
 

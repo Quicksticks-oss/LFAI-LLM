@@ -37,6 +37,7 @@ class Trainer:
         self.save_file = f'{name}-{self.params}M-{self.current_date}-{numlayers}-{hiddensize}-ctx{context_length}'
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
+        print(f'Using device: {self.device}')
         self.ds_files = []
         self.vocab_size = 0
         self.chars = None
