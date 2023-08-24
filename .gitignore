@@ -169,15 +169,7 @@ dataset/text.txt
 dataset/books.txt
 vocab.txt
 dataset_checker.py
-graph/losses.png
-graph/losses-LFAI.png
-graph/lossesLFAI-books.png
 dataset/dataset.txt
 .gitignore
-graph/losses-LFAI-chat.png
-graph/losses-completed-chat.png
-graph/losses-LFAI-chat-pg.png
-graph/losses-test.png
-graph/losses-Chat.png
-graph/losses-gru.png
-graph/losses-rnn.png
+graph/*
+graph/losses-chat-lstm.png

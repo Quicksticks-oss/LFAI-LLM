@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from model.LFAI_GRU import LFAI_GRU
+from model.LFAI_RNN import LFAI_RNN
 from tokenizers.tokenizer_v3 import Tokenizer_V3
 from tokenizers.tokenizer_v2 import Tokenizer_V2
 from tokenizers.tokenizer_v1 import Tokenizer_V1
@@ -25,12 +27,20 @@ class Inference:
         self.context_size = data['context_length']
         self.vocab_size = data['vocab_size']
         self.version = int(data['version'])
-        if self.version == 1:
-            self.model = LFAI_LSTM(
-                data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
-        else:
-            self.model = LFAI_LSTM_V2(
-                data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
+        self.network = data['network']
+        if self.network == 'lstm':
+            if self.version == 1:
+                self.model = LFAI_LSTM(
+                    data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'])
+            else:
+                self.model = LFAI_LSTM_V2(
+                    data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
+        elif self.network == 'gru':
+            self.model = LFAI_GRU(self.vocab_size, self.context_size,
+                        data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
+        elif self.network == 'rnn':    
+            self.model = LFAI_RNN(self.vocab_size, self.context_size,
+                        data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
         self.model.load_state_dict(data['state_dict'])
         self.model.eval()
 
@@ -66,6 +76,8 @@ class Inference:
             else:
                 input_sequence = torch.tensor(self.tokenizer.encode(
                     input_data), dtype=torch.long).unsqueeze(0)
+                
+            print(input_sequence.shape)
                 
             # Initialize the output sequence with the input sequence
             output_sequence = input_sequence
