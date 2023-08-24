@@ -42,7 +42,7 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 
 - Train More Public Models
 
-- Additional networks like GRU
+- ~~Additional networks like GRU~~
 
 - Add online model inference.
 
