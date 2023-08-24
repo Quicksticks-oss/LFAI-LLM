@@ -173,3 +173,4 @@ dataset/dataset.txt
 .gitignore
 graph/*
 graph/losses-chat-lstm.png
+custom.sh
