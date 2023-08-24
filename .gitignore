@@ -178,3 +178,6 @@ graph/losses-LFAI-chat.png
 graph/losses-completed-chat.png
 graph/losses-LFAI-chat-pg.png
 graph/losses-test.png
+graph/losses-Chat.png
+graph/losses-gru.png
+graph/losses-rnn.png

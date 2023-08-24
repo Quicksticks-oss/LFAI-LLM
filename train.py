@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from model.LFAI_GRU import LFAI_GRU
+from model.LFAI_RNN import LFAI_RNN
 from tokenizers.tokenizer_v3 import Tokenizer_V3
 from tokenizers.tokenizer_v2 import Tokenizer_V2
 from tokenizers.tokenizer_v1 import Tokenizer_V1
@@ -20,7 +22,7 @@ import io
 
 
 class Trainer:
-    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2, load:str="") -> None:
+    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2, load:str="",network:str='lstm') -> None:
         self.current_date = str(
             datetime.datetime.now().date()).replace('-', '')
         self.name = name
@@ -32,6 +34,7 @@ class Trainer:
         self.hiddensize = hiddensize
         self.learning_rate = learning_rate
         self.context_length = context_length
+        self.network = network.lower()
         self.half = half
         self.params = 0
         self.save_file = f'{name}-{self.params}M-{self.current_date}-{numlayers}-{hiddensize}-ctx{context_length}'
@@ -136,17 +139,23 @@ class Trainer:
         del (self.text)
 
     def create_model(self):
-        if self.version == 1:
-            self.model = LFAI_LSTM(self.vocab_size, self.context_length,
-                                   self.hiddensize, self.numlayers, self.device)
-        else:
-            self.model = LFAI_LSTM_V2(self.vocab_size, self.context_length,
-                                      self.hiddensize, self.numlayers, self.device, half=self.half)
-        
+        if self.network == 'lstm':
+            if self.version == 1:
+                self.model = LFAI_LSTM(self.vocab_size, self.context_length,
+                                    self.hiddensize, self.numlayers, self.device)
+            else:
+                self.model = LFAI_LSTM_V2(self.vocab_size, self.context_length,
+                                        self.hiddensize, self.numlayers, self.device, half=self.half)
+        elif self.network == 'gru':
+            self.model = LFAI_GRU(self.vocab_size, self.context_length,
+                        self.hiddensize, self.numlayers, self.device, half=self.half)
+        elif self.network == 'rnn':    
+            self.model = LFAI_RNN(self.vocab_size, self.context_length,
+                        self.hiddensize, self.numlayers, self.device, half=self.half)
+
         if len(self.load) > 0:
             data = torch.load(self.load, map_location=self.device)
             self.model.load_state_dict(data['state_dict'])
-
         
         # Loss and optimizer
         self.criterion = nn.CrossEntropyLoss().to(device=self.device)
@@ -191,7 +200,10 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
-                hidden = tuple(h.detach() for h in hidden)
+                if self.network == 'lstm':
+                    hidden = tuple(h.detach() for h in hidden)
+                else:
+                    hidden = hidden.detach()
 
                 if _ % 8 == 0:
                     description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
@@ -266,7 +278,9 @@ def main():
                         help="Specify what version of the model.", required=False)
     parser.add_argument("--load", default="",
                         help="Specify a premade model to load.", required=False)
-
+    parser.add_argument("--network", default="LSTM",
+                        help="Specify a type of model (LSTM, GRU, RNN).", required=False)
+    
     args = parser.parse_args()
 
     name = args.name
@@ -280,10 +294,11 @@ def main():
     version = int(args.version)
     half = bool(args.half)
     load = str(args.load)
+    network = str(args.network)
 
     trainer = Trainer(name, dataset, epochs,
                       contextsize, numlayers, hiddensize,
-                      batch_size, learningrate, half, version, load)
+                      batch_size, learningrate, half, version, load, network)
     print('Loading dataset...')
     trainer.load_dataset()
     print('Loading tokenizer...')
