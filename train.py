@@ -228,6 +228,7 @@ class Trainer:
                 'num_layers': self.numlayers,
                 'chars': self.chars,
                 'state_dict': self.model.state_dict(),
+                'network': self.network,
                 'version': self.version
             }
         elif self.version == 2 or self.version == 4:
@@ -239,6 +240,7 @@ class Trainer:
                 'chars': self.tokenizer.tokens,
                 'state_dict': self.model.state_dict(),
                 'version': self.version,
+                'network': self.network,
                 'max_n_count': self.tokenizer.max_n_count
             }
         elif self.version == 3:
@@ -249,6 +251,7 @@ class Trainer:
                 'num_layers': self.numlayers,
                 'chars': self.tokenizer.model.getvalue(),
                 'state_dict': self.model.state_dict(),
+                'network': self.network,
                 'version': self.version
             }
         torch.save(save_out, Path('weights').joinpath(name+'.pth'))
