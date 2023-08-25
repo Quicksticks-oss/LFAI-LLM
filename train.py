@@ -25,11 +25,12 @@ import io
 class Trainer:
     def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize,
                  batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2,
-                 load: str = "", network: str = 'lstm', graph: bool = False, savelast: bool = False) -> None:
+                 load: str = "", network: str = 'lstm', graph: bool = False, savelast: bool = False, dev:bool=False) -> None:
         self.current_date = str(
             datetime.datetime.now().date()).replace('-', '')
         self.name = name
         self.dataset = Path(dataset)
+        self.dev = dev
         self.graph = graph
         self.epochs = epochs
         self.savelast = savelast
@@ -53,6 +54,9 @@ class Trainer:
         self.model = None
         self.text = None
         self.data = None
+
+        if self.dev:
+            print('Trainer loaded in Dev Mode...')
 
     def encode_and_combine_chunks(self, chunk_size=10000000):
         chunks = [self.text[i:i+chunk_size]
@@ -95,8 +99,10 @@ class Trainer:
                     raise IOError('Dataset does not contain any files!')
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
-                    self.text = repr(f.read().replace(
-                        '\\n', '\n'))  # [:1_000_000] # Shortens training data for development.
+                    if self.dev:
+                        self.text = repr(f.read().replace('\\n', '\n'))[:1_000_000] # Shortens training data for development.
+                    else:
+                        self.text = repr(f.read().replace('\\n', '\n'))
         else:
             raise IOError('Dataset does not exist!')
 
@@ -304,6 +310,8 @@ def main():
                         help="Specify if the model graph its losses.", required=False)
     parser.add_argument("--savelast", default=False, type=bool,
                         help="Specify if the model should save last or cosntant pth.", required=False)
+    parser.add_argument("--dev", default=False, type=bool,
+                        help="Specify if the model should load in development mode (NOT RECOMENDED).", required=False)
 
     args = parser.parse_args()
 
@@ -321,11 +329,12 @@ def main():
     network = str(args.network)
     graph = bool(args.graph)
     savelast = bool(args.savelast)
+    dev = bool(args.dev)
 
     trainer = Trainer(name, dataset, epochs,
                       contextsize, numlayers, hiddensize,
                       batch_size, learningrate, half,
-                      version, load, network, graph, savelast)
+                      version, load, network, graph, savelast, dev)
     print('Loading dataset...')
     trainer.load_dataset()
     print('Loading tokenizer...')
