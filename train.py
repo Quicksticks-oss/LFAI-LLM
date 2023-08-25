@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
-from model.LFAI_Linear import LFAI_LINEAR
+from model.LFAI_Linear import LFAI_Linear
 from model.LFAI_GRU import LFAI_GRU
 from model.LFAI_RNN import LFAI_RNN
 from tokenizers.tokenizer_v3 import Tokenizer_V3
@@ -90,7 +90,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:1_000_000] # Shortens training data for development.
+                        '\\n', '\n'))[:1_000_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 
@@ -154,7 +154,7 @@ class Trainer:
             self.model = LFAI_RNN(self.vocab_size, self.context_length,
                         self.hiddensize, self.numlayers, self.device, half=self.half)
         elif self.network == 'linear':
-            self.model == LFAI_LINEAR(self.context_length, self.hiddensize, self.vocab_size, self.device, half=self.half)
+            self.model = LFAI_Linear(self.vocab_size, self.hiddensize, self.vocab_size, self.device, half=self.half)
 
         if len(self.load) > 0:
             data = torch.load(self.load, map_location=self.device)

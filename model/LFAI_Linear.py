@@ -6,28 +6,37 @@ import torch.nn.functional as F
 # Define the Linear model.
 
 
-class LFAI_LINEAR(nn.Module):
-    def __init__(self, input_size: int, hidden_size: int, output_size: int, device: torch.device = torch.device('cpu'), dropout_p: float = 0.1, half: bool = False):
-        super(LFAI_LINEAR, self).__init__()
+class LFAI_Linear(nn.Module):
+    def __init__(self, vocab_size: int, block_size: int, hidden_size: int, device: torch.device = torch.device('cpu'), dropout_p: float = 0.1, half: bool = False):
+        super(LFAI_Linear, self).__init__()
         self.hidden_size = hidden_size
+        self.vocab_size = vocab_size
+        self.block_size = block_size
         self.dropout_p = dropout_p
         self.use_half = half
 
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, hidden_size)
-        self.fc4 = nn.Linear(hidden_size, output_size)
+        self.embedding = nn.Embedding(vocab_size, hidden_size)
+        self.fc_layers = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, vocab_size)
+        )
 
         self.to(device)
         self.device = device
 
+        # Precompute embeddings for all possible inputs
+        self.embedding.weight.data = torch.randn(
+            block_size + vocab_size, hidden_size).to(device)
+
     def forward(self, x):
-        x = F.dropout(x, p=self.dropout_p, training=self.training)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=self.dropout_p, training=self.training)
-        x = F.relu(self.fc2(x))
-        x = F.dropout(x, p=self.dropout_p, training=self.training)
-        x = F.relu(self.fc3(x))
-        x = F.dropout(x, p=self.dropout_p, training=self.training)
-        output = self.fc4(x)
+        embedded = self.embedding(x)
+        # Adjust the dropout rate as needed
+        embedded = F.dropout(embedded, p=self.dropout_p,
+                             training=self.training)
+        output = self.fc_layers(embedded)
         return output
