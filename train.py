@@ -23,12 +23,16 @@ import io
 
 
 class Trainer:
-    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize, batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2, load:str="",network:str='lstm') -> None:
+    def __init__(self, name, dataset, epochs, context_length, numlayers, hiddensize,
+                 batch_size=12, learning_rate=0.001, half: bool = False, version: int = 2,
+                 load: str = "", network: str = 'lstm', graph: bool = False, savelast: bool = False) -> None:
         self.current_date = str(
             datetime.datetime.now().date()).replace('-', '')
         self.name = name
         self.dataset = Path(dataset)
+        self.graph = graph
         self.epochs = epochs
+        self.savelast = savelast
         self.version = version
         self.batch_size = batch_size
         self.numlayers = numlayers
@@ -51,9 +55,11 @@ class Trainer:
         self.data = None
 
     def encode_and_combine_chunks(self, chunk_size=10000000):
-        chunks = [self.text[i:i+chunk_size] for i in range(0, len(self.text), chunk_size)]
+        chunks = [self.text[i:i+chunk_size]
+                  for i in range(0, len(self.text), chunk_size)]
         encoded_chunks = [self.tokenizer.encode(chunk) for chunk in chunks]
-        combined_data = torch.tensor([val for chunk in encoded_chunks for val in chunk], dtype=torch.long)
+        combined_data = torch.tensor(
+            [val for chunk in encoded_chunks for val in chunk], dtype=torch.long)
         return combined_data
 
     def count_parameters(self):
@@ -90,7 +96,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     self.text = repr(f.read().replace(
-                        '\\n', '\n')) # [:1_000_000] # Shortens training data for development.
+                        '\\n', '\n'))  # [:1_000_000] # Shortens training data for development.
         else:
             raise IOError('Dataset does not exist!')
 
@@ -117,7 +123,8 @@ class Trainer:
                     f.write(self.text[:50_000_000].replace('\\n', '\n'))
                 self.tokenizer = Tokenizer_V2()
                 self.vocab_size = 4096
-                self.tokenizer.train([Path('tmp/vocab.txt')], vocab_size=self.vocab_size)
+                self.tokenizer.train(
+                    [Path('tmp/vocab.txt')], vocab_size=self.vocab_size)
             elif self.version == 4:
                 self.tokenizer = Tokenizer_V3()
                 self.tokenizer.load(self.text)
@@ -132,7 +139,8 @@ class Trainer:
         if self.version == 1:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
         elif self.version == 2 or self.version == 4:
-            self.data = torch.tensor(self.tokenizer.encode(self.text), dtype=torch.long)
+            self.data = torch.tensor(
+                self.tokenizer.encode(self.text), dtype=torch.long)
         elif self.version == 3:
             self.data = self.encode_and_combine_chunks()
         n = int(1*len(self.data))  # first 90% will be train, rest val
@@ -144,23 +152,24 @@ class Trainer:
         if self.network == 'lstm':
             if self.version == 1:
                 self.model = LFAI_LSTM(self.vocab_size, self.context_length,
-                                    self.hiddensize, self.numlayers, self.device)
+                                       self.hiddensize, self.numlayers, self.device)
             else:
                 self.model = LFAI_LSTM_V2(self.vocab_size, self.context_length,
-                                        self.hiddensize, self.numlayers, self.device, half=self.half)
+                                          self.hiddensize, self.numlayers, self.device, half=self.half)
         elif self.network == 'gru':
             self.model = LFAI_GRU(self.vocab_size, self.context_length,
-                        self.hiddensize, self.numlayers, self.device, half=self.half)
-        elif self.network == 'rnn':    
+                                  self.hiddensize, self.numlayers, self.device, half=self.half)
+        elif self.network == 'rnn':
             self.model = LFAI_RNN(self.vocab_size, self.context_length,
-                        self.hiddensize, self.numlayers, self.device, half=self.half)
+                                  self.hiddensize, self.numlayers, self.device, half=self.half)
         elif self.network == 'linear':
-            self.model = LFAI_Linear(self.vocab_size, self.context_length, self.hiddensize, self.device, half=self.half)
+            self.model = LFAI_Linear(
+                self.vocab_size, self.context_length, self.hiddensize, self.device, half=self.half)
 
         if len(self.load) > 0:
             data = torch.load(self.load, map_location=self.device)
             self.model.load_state_dict(data['state_dict'])
-        
+
         # Loss and optimizer
         self.criterion = nn.CrossEntropyLoss().to(device=self.device)
 
@@ -175,7 +184,7 @@ class Trainer:
         losses = []
 
         size = self.train_data.size(0)-1
-        
+
         print('Processing full dataset...')
 
         for epoch in range(self.epochs):
@@ -193,9 +202,9 @@ class Trainer:
                         torch.int16).to(torch.long)
                     targets_batch = targets_batch.to(
                         torch.int16).to(torch.long)
-                
+
                 self.optimizer.zero_grad()
-                
+
                 if self.network != 'linear':
                     outputs, hidden = self.model(inputs_batch, hidden)
                 else:
@@ -203,7 +212,7 @@ class Trainer:
 
                 loss = self.criterion(
                     outputs.view(-1, self.vocab_size), targets_batch.view(-1))
-            
+
                 loss.backward()
                 self.optimizer.step()
 
@@ -217,8 +226,9 @@ class Trainer:
                     description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                     td.set_description(description)
                     losses.append(loss.item())
-                    if _ % (self.batch_size*4) == 0:
+                    if _ % (self.batch_size*6) == 0 and self.savelast:
                         self.save()
+                    if _ % (self.batch_size*6) == 0 and self.graph:
                         create_folder_if_not_exists('graph')
                         plot_loss(losses[:50], 'graph/losses-'+self.name)
         self.save()
@@ -290,7 +300,11 @@ def main():
                         help="Specify a premade model to load.", required=False)
     parser.add_argument("--network", default="LSTM",
                         help="Specify a type of model (LSTM, GRU, RNN).", required=False)
-    
+    parser.add_argument("--graph", default=False, type=bool,
+                        help="Specify if the model graph its losses.", required=False)
+    parser.add_argument("--savelast", default=False, type=bool,
+                        help="Specify if the model should save last or cosntant pth.", required=False)
+
     args = parser.parse_args()
 
     name = args.name
@@ -305,10 +319,13 @@ def main():
     half = bool(args.half)
     load = str(args.load)
     network = str(args.network)
+    graph = bool(args.graph)
+    savelast = bool(args.savelast)
 
     trainer = Trainer(name, dataset, epochs,
                       contextsize, numlayers, hiddensize,
-                      batch_size, learningrate, half, version, load, network)
+                      batch_size, learningrate, half,
+                      version, load, network, graph, savelast)
     print('Loading dataset...')
     trainer.load_dataset()
     print('Loading tokenizer...')
