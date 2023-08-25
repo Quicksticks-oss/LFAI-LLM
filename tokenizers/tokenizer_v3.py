@@ -2,10 +2,10 @@ import re
 from collections import Counter
 
 class Tokenizer_V3:
-    def __init__(self) -> None:
+    def __init__(self, max_n_count:int=2) -> None:
         self.tokens = {}
         self.token_pattern = re.compile(r'\b\w+\b|[.,*!?;:]|[ \t\n\r\f\v]')
-        self.max_n_count = 2
+        self.max_n_count = max_n_count
 
     def _find_words(self ,text:str):
         words = self.token_pattern.findall(repr(text).replace('\\n', '\n'))
