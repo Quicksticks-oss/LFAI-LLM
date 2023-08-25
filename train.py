@@ -128,6 +128,7 @@ class Trainer:
                 'Could now load tokenizer due to lack of data in dataset.')
 
     def convert_dataset(self):
+        print('Encoding...')
         if self.version == 1:
             self.data = torch.tensor(self.encode(self.text), dtype=torch.long)
         elif self.version == 2 or self.version == 4:
@@ -173,7 +174,7 @@ class Trainer:
     def train(self):
         losses = []
 
-        size = (self.train_data.size(0)-1) - self.context_length
+        size = self.train_data.size(0)-1
         
         print('Processing full dataset...')
 

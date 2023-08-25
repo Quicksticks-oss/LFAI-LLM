@@ -174,3 +174,4 @@ dataset/dataset.txt
 graph/*
 graph/losses-chat-lstm.png
 custom.sh
+test.py
