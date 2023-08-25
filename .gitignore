@@ -175,3 +175,5 @@ graph/*
 graph/losses-chat-lstm.png
 custom.sh
 test.py
+onnxinfer/chat-lstm-10.38M-20230824-4-512-ctx512.json
+onnxinfer/chat-lstm-10.38M-20230824-4-512-ctx512.onnx

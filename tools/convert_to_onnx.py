@@ -4,6 +4,7 @@ sys.path.append("../model")
 from LFAI_LSTM import LFAI_LSTM
 from LFAI_LSTM import LFAI_LSTM_V2
 import argparse
+import json
 
 
 def main(model_path, version):
@@ -19,6 +20,19 @@ def main(model_path, version):
     else:
         model = LFAI_LSTM(
             data['vocab_size'], data['context_length'], data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
+        
+    with open(model_path.replace('.pth','.json'), 'w+') as f:
+        x = {
+            'vocab_size': data['vocab_size'],
+            'context_length': data['context_length'],
+            'hidden_size': data['hidden_size'],
+            'num_layers': data['num_layers'],
+            'chars': data['chars'],
+            'version': data['version'],
+            'network': data['network'],
+            'max_n_count': data['max_n_count']
+        }
+        f.write(json.dumps(x))
 
     hidden = model.init_hidden(1, inference=True)
 
