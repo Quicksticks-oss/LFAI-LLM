@@ -10,6 +10,7 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 
 ## Models
 
+- [Chat Medium](https://huggingface.co/Quicksticks-oss/LFAI/blob/main/chat-lstm-10.38M-20230824-4-512-ctx512.pth)
 - [Shakespeare Small](https://huggingface.co/Quicksticks-oss/LFAI/blob/main/Shakespeare-0.8M-20230820-6-128-ctx128.pth)
 
 ## Screenshots
@@ -40,7 +41,7 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 
 ## Roadmap
 
-- Train More Public Models
+- ~~Train More Public Models~~
 
 - ~~Additional networks like GRU~~
 
