@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from model.LFAI_Linear import LFAI_Linear
 from model.LFAI_GRU import LFAI_GRU
 from model.LFAI_RNN import LFAI_RNN
 from tokenizers.tokenizer_v3 import Tokenizer_V3
@@ -40,6 +41,9 @@ class Inference:
                         data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
         elif self.network == 'rnn':    
             self.model = LFAI_RNN(self.vocab_size, self.context_size,
+                        data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
+        elif self.network == 'linear':    
+            self.model = LFAI_Linear(self.vocab_size, self.context_size,
                         data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
         self.model.load_state_dict(data['state_dict'])
         self.model.eval()
