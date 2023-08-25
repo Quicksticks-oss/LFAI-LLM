@@ -44,7 +44,7 @@ class Inference:
                         data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
         elif self.network == 'linear':    
             self.model = LFAI_Linear(self.vocab_size, self.context_size,
-                        data['hidden_size'], data['num_layers'], device='cpu', dropout_p=0.9)
+                        data['hidden_size'], device='cpu', dropout_p=0.9)
         self.model.load_state_dict(data['state_dict'])
         self.model.eval()
 
@@ -69,8 +69,10 @@ class Inference:
             self.tokenizer.tokens = self.chars
 
     def run(self, input_data: str, hidden=None, ending_criterion:str=None):
-        if hidden == None:
+
+        if hidden == None and self.network != 'linear':
             hidden = self.model.init_hidden(1, inference=True)
+        
         if ending_criterion != None:
             ending_criterion = self.tokenizer.encode(ending_criterion)[0]
 
@@ -87,7 +89,10 @@ class Inference:
 
             # Generate the rest of the sequence
             for _ in range(self.context_size):
-                output, hidden = self.model(input_sequence, hidden)
+                if self.network != 'linear':
+                    output, hidden = self.model(input_sequence, hidden)
+                else:
+                    output = self.model(input_sequence)
                 output = output[:, -1, :]
                 _, topk = torch.topk(output, 1)
                 input_sequence = topk.squeeze(0).unsqueeze(0)

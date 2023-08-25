@@ -154,7 +154,7 @@ class Trainer:
             self.model = LFAI_RNN(self.vocab_size, self.context_length,
                         self.hiddensize, self.numlayers, self.device, half=self.half)
         elif self.network == 'linear':
-            self.model = LFAI_Linear(self.vocab_size, self.context_length, self.hiddensize, self.vocab_size, self.device, half=self.half)
+            self.model = LFAI_Linear(self.vocab_size, self.context_length, self.hiddensize, self.device, half=self.half)
 
         if len(self.load) > 0:
             data = torch.load(self.load, map_location=self.device)

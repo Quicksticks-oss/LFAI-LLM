@@ -13,6 +13,7 @@ class LFAI_Linear(nn.Module):
         self.vocab_size = vocab_size
         self.block_size = block_size
         self.dropout_p = dropout_p
+        self.device = device
         self.use_half = half
 
         self.embedding = nn.Embedding(vocab_size, hidden_size)
@@ -26,12 +27,9 @@ class LFAI_Linear(nn.Module):
             nn.Linear(hidden_size, vocab_size)
         )
 
-        self.to(device)
-        self.device = device
-
+        self.to(self.device)
         # Precompute embeddings for all possible inputs
-        self.embedding.weight.data = torch.randn(
-            block_size + vocab_size, hidden_size).to(device)
+        self.embedding.weight.data = torch.randn(block_size + vocab_size, hidden_size).to(self.device)
 
     def forward(self, x):
         embedded = self.embedding(x)
