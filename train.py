@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 from model.LFAI_LSTM import LFAI_LSTM
 from model.LFAI_LSTM import LFAI_LSTM_V2
+from model.LFAI_Linear import LFAI_LINEAR
 from model.LFAI_GRU import LFAI_GRU
 from model.LFAI_RNN import LFAI_RNN
 from tokenizers.tokenizer_v3 import Tokenizer_V3
@@ -152,6 +153,8 @@ class Trainer:
         elif self.network == 'rnn':    
             self.model = LFAI_RNN(self.vocab_size, self.context_length,
                         self.hiddensize, self.numlayers, self.device, half=self.half)
+        elif self.network == 'linear':
+            self.model == LFAI_LINEAR(self.context_length, self.hiddensize, self.vocab_size, self.device, half=self.half)
 
         if len(self.load) > 0:
             data = torch.load(self.load, map_location=self.device)
@@ -178,7 +181,8 @@ class Trainer:
         for epoch in range(self.epochs):
 
             self.model.train()
-            hidden = self.model.init_hidden(self.batch_size)
+            if self.network != 'linear':
+                hidden = self.model.init_hidden(self.batch_size)
             td = tqdm(range(0, size), dynamic_ncols=True)
 
             for _ in td:
@@ -192,7 +196,10 @@ class Trainer:
                 
                 self.optimizer.zero_grad()
                 
-                outputs, hidden = self.model(inputs_batch, hidden)
+                if self.network != 'linear':
+                    outputs, hidden = self.model(inputs_batch, hidden)
+                else:
+                    outputs = self.model(inputs_batch)
 
                 loss = self.criterion(
                     outputs.view(-1, self.vocab_size), targets_batch.view(-1))
@@ -200,10 +207,11 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
-                if self.network == 'lstm':
-                    hidden = tuple(h.detach() for h in hidden)
-                else:
-                    hidden = hidden.detach()
+                if self.network != 'linear':
+                    if self.network == 'lstm':
+                        hidden = tuple(h.detach() for h in hidden)
+                    else:
+                        hidden = hidden.detach()
 
                 if _ % 8 == 0:
                     description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
