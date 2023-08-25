@@ -173,8 +173,7 @@ class Trainer:
     def train(self):
         losses = []
 
-        size = ((self.train_data.size(0)-1) - self.context_length) - \
-            (self.context_length*self.batch_size)
+        size = (self.train_data.size(0)-1) - self.context_length
         
         print('Processing full dataset...')
 
@@ -183,7 +182,7 @@ class Trainer:
             self.model.train()
             if self.network != 'linear':
                 hidden = self.model.init_hidden(self.batch_size)
-            td = tqdm(range(0, size), dynamic_ncols=True)
+            td = tqdm(range(0, size, self.batch_size), dynamic_ncols=True)
 
             for _ in td:
                 inputs_batch, targets_batch = self.get_batch('train')
@@ -213,12 +212,11 @@ class Trainer:
                     else:
                         hidden = hidden.detach()
 
-                if _ % 8 == 0:
+                if _ % (self.batch_size*2) == 0:
                     description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                     td.set_description(description)
-                    if _ % 64 == 0:
-                        losses.append(loss.item())
-                    if _ % 512 == 0:
+                    losses.append(loss.item())
+                    if _ % (self.batch_size*4) == 0:
                         self.save()
                         create_folder_if_not_exists('graph')
                         plot_loss(losses[:50], 'graph/losses-'+self.name)
