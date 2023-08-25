@@ -64,8 +64,9 @@ class Inference:
             self.tokenizer = Tokenizer_V3()
             self.tokenizer.tokens = self.chars
 
-    def run(self, input_data: str, ending_criterion:str=None):
-        hidden = self.model.init_hidden(1, inference=True)
+    def run(self, input_data: str, hidden=None, ending_criterion:str=None):
+        if hidden == None:
+            hidden = self.model.init_hidden(1, inference=True)
         if ending_criterion != None:
             ending_criterion = self.tokenizer.encode(ending_criterion)[0]
 
@@ -76,8 +77,6 @@ class Inference:
             else:
                 input_sequence = torch.tensor(self.tokenizer.encode(
                     input_data), dtype=torch.long).unsqueeze(0)
-                
-            print(input_sequence.shape)
                 
             # Initialize the output sequence with the input sequence
             output_sequence = input_sequence
@@ -113,5 +112,5 @@ if __name__ == '__main__':
 
     inference = Inference(args.model)
     with open(Path(args.prompt), 'r') as f:
-        output, hidden = inference.run(f.read().replace('\n', '\\n'), args.endingcriterion)
+        output, hidden = inference.run(f.read().replace('\n', '\\n'), ending_criterion=args.endingcriterion)
         print(output.replace('\\n', '\n'))
