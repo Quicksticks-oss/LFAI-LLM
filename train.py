@@ -100,7 +100,7 @@ class Trainer:
             elif self.dataset.is_file():
                 with open(self.dataset) as f:
                     if self.dev:
-                        self.text = repr(f.read().replace('\\n', '\n'))[:1_000_000] # Shortens training data for development.
+                        self.text = repr(f.read().replace('\\n', '\n'))[:50_000_000] # Shortens training data for development.
                     else:
                         self.text = repr(f.read().replace('\\n', '\n'))
         else:
