@@ -308,7 +308,7 @@ def main():
                         help="Specify a type of model (LSTM, GRU, RNN).", required=False)
     parser.add_argument("--graph", default=False, type=bool,
                         help="Specify if the model graph its losses.", required=False)
-    parser.add_argument("--savelast", default=False, type=bool,
+    parser.add_argument("--savelast", default=True, type=bool,
                         help="Specify if the model should save last or cosntant pth.", required=False)
     parser.add_argument("--dev", default=False, type=bool,
                         help="Specify if the model should load in development mode (NOT RECOMENDED).", required=False)
