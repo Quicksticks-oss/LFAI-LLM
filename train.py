@@ -126,7 +126,7 @@ class Trainer:
             elif self.version == 3:
                 create_folder_if_not_exists('tmp')
                 with open('tmp/vocab.txt', 'w+') as f:
-                    f.write(self.text[:50_000_000].replace('\\n', '\n'))
+                    f.write(self.text[:75_000_000].replace('\\n', '\n'))
                 self.tokenizer = Tokenizer_V2()
                 self.vocab_size = 4096
                 self.tokenizer.train(
@@ -203,11 +203,12 @@ class Trainer:
             for _ in td:
                 inputs_batch, targets_batch = self.get_batch('train')
 
+                inputs_batch = inputs_batch.to(torch.int32).to(torch.long)
+                targets_batch = targets_batch.to(torch.int32).to(torch.long)
+                
                 if self.half:
-                    inputs_batch = inputs_batch.to(
-                        torch.int16).to(torch.long)
-                    targets_batch = targets_batch.to(
-                        torch.int16).to(torch.long)
+                    inputs_batch = inputs_batch.to(torch.float16).to(torch.long)
+                    targets_batch = targets_batch.to(torch.float16).to(torch.long)
 
                 self.optimizer.zero_grad()
 
