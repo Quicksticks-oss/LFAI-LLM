@@ -18,10 +18,19 @@ class SIModel(nn.Module):
 
         self.relu = nn.ReLU()
 
-    def forward(self, x):
+        self.stateModel = nn.Linear(self.hidden_size, self.hidden_size)
+
+    def forward(self, x, state=None):
         x = self.input_layer(x)
+
+        if state == None:
+            state = self.init_state(x.shape[0])
+        x = self.relu(self.stateModel(torch.cat((state, x), dim=0)))
+
         x = self.relu(self.hidden_layer(x))
         x = self.output_layer(x)
-        return x
+        return x, state
 
-
+    def init_state(self, batch_size):
+        weight = next(self.parameters()).data
+        return weight.new(batch_size, self.hidden_size).zero_()

@@ -21,7 +21,7 @@ targets = torch.randn(100, output_size)
 # Training loop
 for epoch in range(num_epochs):
     # Forward pass
-    outputs = model(inputs)
+    outputs, _ = model(inputs)
     loss = criterion(outputs, targets)
     
     # Backpropagation and optimization
