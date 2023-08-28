@@ -126,7 +126,7 @@ class Trainer:
             elif self.version == 3:
                 create_folder_if_not_exists('tmp')
                 with open('tmp/vocab.txt', 'w+') as f:
-                    f.write(self.text[:75_000_000].replace('\\n', '\n'))
+                    f.write(self.text[:96_000_000].replace('\\n', '\n'))
                 self.tokenizer = Tokenizer_V2()
                 self.vocab_size = 4096
                 self.tokenizer.train(
