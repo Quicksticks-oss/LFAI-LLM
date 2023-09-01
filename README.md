@@ -47,6 +47,8 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 
 - Add online model inference.
 
+- Add v5
+
 - ~~Use last token as new token in inference~~
 
 - Add more integrations
