@@ -15,7 +15,7 @@ from torch.nn import functional as F
 # hyperparameters
 batch_size = 6 # how many independent sequences will we process in parallel?
 block_size = 32 # what is the maximum context length for predictions?
-max_iters = 400
+max_iters = 10000
 eval_interval = 25
 learning_rate = 1e-3
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -111,6 +111,7 @@ class LanguageModel(nn.Module):
         return logits, hidden, loss
 
     def generate(self, idx, max_new_tokens, hidden=None):
+        idx_export = idx
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
             # crop idx to the last block_size tokens
@@ -124,8 +125,9 @@ class LanguageModel(nn.Module):
             # sample from the distribution
             idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
             # append sampled index to the running sequence
-            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
-        return idx, hidden
+            idx = idx_next
+            idx_export = torch.cat((idx_export, idx_next), dim=1) # (B, T+1)
+        return idx_export, hidden
 
 
 model = LanguageModel()
