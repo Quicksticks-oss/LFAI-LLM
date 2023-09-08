@@ -13,9 +13,9 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 # hyperparameters
-batch_size = 128 # how many independent sequences will we process in parallel?
-block_size = 256 # what is the maximum context length for predictions?
-max_iters = 50000
+batch_size = 6 # how many independent sequences will we process in parallel?
+block_size = 32 # what is the maximum context length for predictions?
+max_iters = 400
 eval_interval = 25
 learning_rate = 1e-3
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -28,7 +28,7 @@ dropout = 0.0
 # ------------
 
 # wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
-with open('dataset.txt', 'r', encoding='utf-8') as f:
+with open('input.txt', 'r', encoding='utf-8') as f:
     text = f.read()
 
 # here are all the unique characters that occur in this text
@@ -64,8 +64,9 @@ def estimate_loss():
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
             X, Y = get_batch(split)
-            logits, loss = model(X, Y)
+            logits, hidden, loss = model(X, Y)
             losses[k] = loss.item()
+            hidden = tuple(h.detach() for h in hidden)
         out[split] = losses.mean()
     model.train()
     return out
@@ -75,7 +76,7 @@ def estimate_loss():
 class LanguageModel(nn.Module):
 
     def __init__(self):
-        super().__init__()
+        super(LanguageModel, self).__init__()
         # each token directly reads off the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
@@ -83,14 +84,19 @@ class LanguageModel(nn.Module):
         self.ln_f = nn.LayerNorm(n_embd) # final layer norm
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
-    def forward(self, idx, targets=None):
+    def forward(self, idx, targets=None, hidden=None):
         B, T = idx.shape
 
         # idx and targets are both (B,T) tensor of integers
         tok_emb = self.token_embedding_table(idx) # (B,T,C)
         pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T,C)
         x = tok_emb + pos_emb # (B,T,C)
-        x, _ = self.blocks(x) # (B,T,C)
+
+        if hidden == None:
+            x, hidden = self.blocks(x) # (B,T,C)
+        else:
+            x, hidden = self.blocks(x, hidden) # (B,T,C)
+        
         x = self.ln_f(x) # (B,T,C)
         logits = self.lm_head(x) # (B,T,vocab_size)
 
@@ -102,15 +108,15 @@ class LanguageModel(nn.Module):
             targets = targets.view(B*T)
             loss = F.cross_entropy(logits, targets)
 
-        return logits, loss
+        return logits, hidden, loss
 
-    def generate(self, idx, max_new_tokens):
+    def generate(self, idx, max_new_tokens, hidden=None):
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
             # crop idx to the last block_size tokens
             idx_cond = idx[:, -block_size:]
             # get the predictions
-            logits, loss = self(idx_cond)
+            logits, hidden, loss = self(idx_cond, hidden=hidden)
             # focus only on the last time step
             logits = logits[:, -1, :] # becomes (B, C)
             # apply softmax to get probabilities
@@ -119,7 +125,7 @@ class LanguageModel(nn.Module):
             idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
             # append sampled index to the running sequence
             idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
-        return idx
+        return idx, hidden
 
 
 model = LanguageModel()
@@ -136,17 +142,20 @@ for iter in range(max_iters):
     if iter % eval_interval == 0 or iter == max_iters - 1:
         losses = estimate_loss()
         print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        torch.save(model.state_dict(), 'model.pt')
+        torch.save(model.state_dict(), 'test.pt')
 
     # sample a batch of data
     xb, yb = get_batch('train')
 
     # evaluate the loss
-    logits, loss = model(xb, yb)
+    logits, hidden, loss = model(xb, yb)
+    hidden = tuple(h.detach() for h in hidden)
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
 
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(decode(m.generate(context, max_new_tokens=2000)[0].tolist()))
+genned, hidden = m.generate(context, max_new_tokens=2000)
+genned = genned[0].tolist()
+print(decode(genned))

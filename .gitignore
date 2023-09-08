@@ -181,3 +181,4 @@ rnnGPT/dataset.txt
 rnnGPT/input.txt
 rnnGPT/model.pt
 rnnGPT/save.pt
+rnnGPT/test.pt
