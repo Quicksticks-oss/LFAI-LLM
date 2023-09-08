@@ -30,7 +30,7 @@ class Tokenizer_V1:
 if __name__ == '__main__':
     # Example usage
     input_text = """Hello, world! This is a basic super basic tokenizer."""
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer_V1()
     tokenizer.load(input_text)
     encoded = tokenizer.encode('Hello basic tokenizer.')
     decoded = tokenizer.decode(encoded)

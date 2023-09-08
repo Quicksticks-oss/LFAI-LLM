@@ -233,6 +233,7 @@ class Trainer:
                     description = f'[ epoch: {epoch}, loss: {loss.item():.4f} ]'
                     td.set_description(description)
                     losses.append(loss.item())
+                    losses = losses[:1000]
                     if _ % (self.batch_size*6) == 0 and self.savelast:
                         self.save()
                     if _ % (self.batch_size*6) == 0 and self.graph:
