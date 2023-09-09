@@ -6,15 +6,16 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 class LanguageModel(nn.Module):
-    def __init__(self, vocab_size, n_embd, n_layer, block_size):
+    def __init__(self, vocab_size, n_embd, n_layer, context_size, device):
         super(LanguageModel, self).__init__()
         self.vocab_size = vocab_size
-        self.block_size = block_size
+        self.context_size = context_size
         self.n_layer = n_layer
         self.n_embd = n_embd
+        self.device = device
         # each token directly reads off the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
-        self.position_embedding_table = nn.Embedding(block_size, n_embd)
+        self.position_embedding_table = nn.Embedding(context_size, n_embd)
         self.blocks = nn.LSTM(n_embd, n_embd, n_layer, batch_first=True)#nn.Sequential(*[nn.Linear(n_embd, n_embd) for _ in range(n_layer)])
         self.ln_f = nn.LayerNorm(n_embd) # final layer norm
         self.lm_head = nn.Linear(n_embd, vocab_size)
@@ -24,7 +25,7 @@ class LanguageModel(nn.Module):
 
         # idx and targets are both (B,T) tensor of integers
         tok_emb = self.token_embedding_table(idx) # (B,T,C)
-        pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T,C)
+        pos_emb = self.position_embedding_table(torch.arange(T, device=self.device)) # (T,C)
         x = tok_emb + pos_emb # (B,T,C)
 
         if hidden == None:
@@ -49,8 +50,8 @@ class LanguageModel(nn.Module):
         idx_export = idx
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
-            # crop idx to the last block_size tokens
-            idx_cond = idx[:, -self.block_size:]
+            # crop idx to the last context_size tokens
+            idx_cond = idx[:, -self.context_size:]
             # get the predictions
             logits, hidden, loss = self(idx_cond, hidden=hidden)
             # focus only on the last time step
