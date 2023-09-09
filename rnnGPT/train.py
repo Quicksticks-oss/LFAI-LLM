@@ -74,7 +74,7 @@ def train():
         if iter % eval_interval == 0 or iter == max_iters - 1:
             losses = estimate_loss(model, val_data, device)
             print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-            torch.save(model.state_dict(), 'test.pt')
+            torch.save(model.state_dict(), 'current.pt')
 
         # sample a batch of data
         xb, yb = get_batch(train_data, device)
