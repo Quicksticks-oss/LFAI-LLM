@@ -1,7 +1,7 @@
 # Variables
 
 TEXT_DATASET = 'input.txt'
-CONTEXT_SIZE = 256 # what is the maximum context length for predictions?
+CONTEXT_SIZE = 256  # what is the maximum context length for predictions?
 
 batch_size = 6
 

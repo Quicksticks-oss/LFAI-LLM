@@ -13,8 +13,8 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 # hyperparameters
-batch_size = 6 # how many independent sequences will we process in parallel?
-block_size = 32 # what is the maximum context length for predictions?
+batch_size = 6  # how many independent sequences will we process in parallel?
+block_size = 32  # what is the maximum context length for predictions?
 max_iters = 10000
 eval_interval = 25
 learning_rate = 1e-3
@@ -36,18 +36,23 @@ chars = sorted(list(set(text)))
 print(chars)
 vocab_size = len(chars)
 # create a mapping from characters to integers
-stoi = { ch:i for i,ch in enumerate(chars) }
-itos = { i:ch for i,ch in enumerate(chars) }
-encode = lambda s: [stoi[c] for c in s] # encoder: take a string, output a list of integers
-decode = lambda l: ''.join([itos[i] for i in l]) # decoder: take a list of integers, output a string
+stoi = {ch: i for i, ch in enumerate(chars)}
+itos = {i: ch for i, ch in enumerate(chars)}
+# encoder: take a string, output a list of integers
+def encode(s): return [stoi[c] for c in s]
+# decoder: take a list of integers, output a string
+def decode(l): return ''.join([itos[i] for i in l])
+
 
 # Train and test splits
 data = torch.tensor(encode(text), dtype=torch.long)
-n = int(0.9*len(data)) # first 90% will be train, rest val
+n = int(0.9*len(data))  # first 90% will be train, rest val
 train_data = data[:n]
 val_data = data[n:]
 
 # data loading
+
+
 def get_batch(split):
     # generate a small batch of data of inputs x and targets y
     data = train_data if split == 'train' else val_data
@@ -56,6 +61,7 @@ def get_batch(split):
     y = torch.stack([data[i+1:i+block_size+1] for i in ix])
     x, y = x.to(device), y.to(device)
     return x, y
+
 
 @torch.no_grad()
 def estimate_loss():
@@ -81,25 +87,27 @@ class LanguageModel(nn.Module):
         # each token directly reads off the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
-        self.blocks = nn.LSTM(n_embd, n_embd, n_layer, batch_first=True)#nn.Sequential(*[nn.Linear(n_embd, n_embd) for _ in range(n_layer)])
-        self.ln_f = nn.LayerNorm(n_embd) # final layer norm
+        # nn.Sequential(*[nn.Linear(n_embd, n_embd) for _ in range(n_layer)])
+        self.blocks = nn.LSTM(n_embd, n_embd, n_layer, batch_first=True)
+        self.ln_f = nn.LayerNorm(n_embd)  # final layer norm
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
     def forward(self, idx, targets=None, hidden=None):
         B, T = idx.shape
 
         # idx and targets are both (B,T) tensor of integers
-        tok_emb = self.token_embedding_table(idx) # (B,T,C)
-        pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T,C)
-        x = tok_emb + pos_emb # (B,T,C)
+        tok_emb = self.token_embedding_table(idx)  # (B,T,C)
+        pos_emb = self.position_embedding_table(
+            torch.arange(T, device=device))  # (T,C)
+        x = tok_emb + pos_emb  # (B,T,C)
 
         if hidden == None:
-            x, hidden = self.blocks(x) # (B,T,C)
+            x, hidden = self.blocks(x)  # (B,T,C)
         else:
-            x, hidden = self.blocks(x, hidden) # (B,T,C)
-        
-        x = self.ln_f(x) # (B,T,C)
-        logits = self.lm_head(x) # (B,T,vocab_size)
+            x, hidden = self.blocks(x, hidden)  # (B,T,C)
+
+        x = self.ln_f(x)  # (B,T,C)
+        logits = self.lm_head(x)  # (B,T,vocab_size)
 
         if targets is None:
             loss = None
@@ -120,14 +128,14 @@ class LanguageModel(nn.Module):
             # get the predictions
             logits, hidden, loss = self(idx_cond, hidden=hidden)
             # focus only on the last time step
-            logits = logits[:, -1, :] # becomes (B, C)
+            logits = logits[:, -1, :]  # becomes (B, C)
             # apply softmax to get probabilities
-            probs = F.softmax(logits, dim=-1) # (B, C)
+            probs = F.softmax(logits, dim=-1)  # (B, C)
             # sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
+            idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
             # append sampled index to the running sequence
             idx = idx_next
-            idx_export = torch.cat((idx_export, idx_next), dim=1) # (B, T+1)
+            idx_export = torch.cat((idx_export, idx_next), dim=1)  # (B, T+1)
         return idx_export, hidden
 
 
@@ -144,7 +152,8 @@ for iter in range(max_iters):
     # every once in a while evaluate the loss on train and val sets
     if iter % eval_interval == 0 or iter == max_iters - 1:
         losses = estimate_loss()
-        print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        print(
+            f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
         torch.save(model.state_dict(), 'test.pt')
 
     # sample a batch of data
