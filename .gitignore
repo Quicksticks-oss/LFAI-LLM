@@ -183,3 +183,4 @@ rnnGPT/model.pt
 rnnGPT/save.pt
 rnnGPT/test.pt
 rnnGPT/tokens.json
+rnnGPT/current.pt

@@ -1,11 +1,11 @@
 # Variables
 
-TEXT_DATASET = 'input.txt'
+TEXT_DATASET = 'dataset.txt'
 CONTEXT_SIZE = 256  # what is the maximum context length for predictions?
 
-batch_size = 6
+batch_size = 32
 
-max_iters = 10000
+max_iters = 50000
 eval_interval = 25
 eval_iters = 200
 
