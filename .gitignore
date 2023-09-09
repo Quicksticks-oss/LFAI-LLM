@@ -182,3 +182,4 @@ rnnGPT/input.txt
 rnnGPT/model.pt
 rnnGPT/save.pt
 rnnGPT/test.pt
+rnnGPT/tokens.json
