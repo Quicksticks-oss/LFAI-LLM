@@ -94,6 +94,15 @@ def train():
         loss.backward()
         optimizer.step()
 
+    save_out = {
+        "out": model.state_dict(),
+        "ctx": CONTEXT_SIZE,
+        "n_embd": n_embd,
+        "n_layer": n_layer,
+        "chars": tokenizer.chars
+    }
+    torch.save(save_out, 'model.pt')
+
     # generate from the model
     context = torch.zeros((1, 1), dtype=torch.long, device=device)
     genned, hidden = model.generate(context, max_new_tokens=2000)
