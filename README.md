@@ -8,10 +8,12 @@
 
 This GitHub repository hosts an innovative project featuring an LSTM-based embedding GPT-like neural network. This network is designed to fuse diverse data modalities such as images, audio, sensor inputs, and text, creating a holistic and human-like sentient AI system with the ability to comprehend and respond across multiple data formats.
 
-## Models
+## Models V1
 
 - [Chat Medium](https://huggingface.co/Quicksticks-oss/LFAI/blob/main/chat-lstm-10.38M-20230824-4-512-ctx512.pth)
 - [Shakespeare Small](https://huggingface.co/Quicksticks-oss/LFAI/blob/main/Shakespeare-0.8M-20230820-6-128-ctx128.pth)
+
+## Models V2
 
 ## Screenshots
 
