@@ -1,6 +1,4 @@
 import torch
-import torch.nn as nn
-from torch.nn import functional as F
 from tokenizer.tokenizer import CharBasedTokenizer
 from model import LanguageModel
 
