@@ -29,7 +29,7 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 ## Usage/Examples
 
 ### Inference V2
-Just open the script inference.py and change the MODEL and DEVICE variable if needed and then run the script.
+Just open the script `inference.py` and change the `MODEL` and `DEVICE` variable if needed and then run the script.
 
 ### Inference V1
 ```python
@@ -47,13 +47,13 @@ clear && python3 train.py --name="Model Name Here" --dataset="Dataset File or Pa
 ```
 
 ### Training Simple LFAI V2
-All training settings can be set in the TRAIN_SETTINGS.py script. The main settings you want to pay attention to are TEXT_DATASET and max_iters.
-
-TEXT_DATASET is the file path that contains all of yor utf-8 or ascii text. This could be for example Tiny Shakespeare.
-max_iters is how many itterations through the dataset you would like to run. I would reccoment setting this to a variable like 5000 if you have a lower teir GPU or CPU but if you have a high teir GPU I would set it to 25000 or 50000.
+All training settings can be set in the `TRAIN_SETTINGS.py` script.
+The main settings you want to pay attention to are `TEXT_DATASET` and `max_iters`.
+`TEXT_DATASET` is the file path that contains all of yor utf-8 or ascii text. This could be for example [Tiny Shakespeare](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt).
+`max_iters` is how many itterations through the dataset you would like to run. I would reccoment setting this to a variable like `5000` if you have a lower teir GPU or CPU but if you have a high teir GPU I would set it to `25000` or `50000`.
 
 ### Finetuning V2
-If you want to finetune a dataset all you need to do is set FINETUNE to True and set LOAD_FILE to the model you want to finetune.
+If you want to finetune a dataset all you need to do is set `FINETUNE` to `True` and set `LOAD_FILE` to the model you want to finetune.
 
 ## Roadmap
 
