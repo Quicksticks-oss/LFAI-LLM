@@ -28,8 +28,7 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 
 ## Usage/Examples
 
-
-Inference V2
+### Inference V2
 Just open the script inference.py and change the MODEL and DEVICE variable if needed and then run the script.
 
 ### Inference V1
