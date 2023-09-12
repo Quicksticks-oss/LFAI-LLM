@@ -1,7 +1,7 @@
 
 ![Logo](images/banner.png)
 
-[![Join The](https://img.shields.io/badge/Discord-blue)](https://discord.gg/y3pKfWkJ5B)
+[![Discord](https://img.shields.io/badge/Join-The_Discord-blue)](https://discord.gg/y3pKfWkJ5B)
 [![Online Demo](https://img.shields.io/badge/Online-Inference_Demo-blue)](https://quicksticks-oss.github.io/LFAI/docs/pages)
 [![Open in colab](https://img.shields.io/badge/Training-Google_Colab-orange)](https://colab.research.google.com/drive/1znKbTH6ORQKMPSknFjpiBtQRd2_l-wZx?usp=sharing)
 
