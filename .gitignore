@@ -184,3 +184,4 @@ rnnGPT/save.pt
 rnnGPT/test.pt
 rnnGPT/tokens.json
 rnnGPT/current.pt
+LFAI-V2/LFAI-books-ctx512-2m.pth

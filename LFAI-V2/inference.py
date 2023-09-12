@@ -16,6 +16,7 @@ if __name__ == '__main__':
     n_embd = save_out["n_embd"]
     n_layer = save_out["n_layer"]
     CONTEXT_SIZE = save_out["ctx"]
+    chars = save_out['chars']
 
     tokenizer = CharBasedTokenizer(chars)
 
