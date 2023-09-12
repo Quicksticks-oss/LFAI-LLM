@@ -1,7 +1,7 @@
 
 ![Logo](images/banner.png)
 
-[![Online Demo](https://img.shields.io/badge/Online-Inference_Demo-blue)](https://quicksticks-oss.github.io/LFAI/pages)
+[![Online Demo](https://img.shields.io/badge/Online-Inference_Demo-blue)](https://quicksticks-oss.github.io/LFAI/docs/pages)
 [![Open in colab](https://img.shields.io/badge/Training-Google_Colab-orange)](https://colab.research.google.com/drive/1znKbTH6ORQKMPSknFjpiBtQRd2_l-wZx?usp=sharing)
 
 # About
