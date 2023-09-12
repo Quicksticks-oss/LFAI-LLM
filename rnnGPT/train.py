@@ -67,8 +67,17 @@ def train():
     train_data = data[:n]
     val_data = data[n:]
     print('Creating Neural Network...')
-    model = LanguageModel(tokenizer.vocab_size, n_embd,
-                          n_layer, CONTEXT_SIZE, device)
+    if not FINETUNE:
+        model = LanguageModel(tokenizer.vocab_size, n_embd,
+                            n_layer, CONTEXT_SIZE, device)
+    else:
+        print('Currently loading model to finetune.')
+        save_out = torch.load(LOAD_FILE)
+        n_embd = save_out["n_embd"]
+        n_layer = save_out["n_layer"]
+        CONTEXT_SIZE = save_out["ctx"]
+        model = LanguageModel(tokenizer.vocab_size, n_embd,
+                            n_layer, CONTEXT_SIZE, device)
     model = model.to(device)
     # print the number of parameters in the model
     print(
@@ -80,9 +89,15 @@ def train():
         # every once in a while evaluate the loss on train and val sets
         if iter % eval_interval == 0 or iter == max_iters - 1:
             losses = estimate_loss(model, val_data, device)
-            print(
-                f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-            torch.save(model.state_dict(), 'current.pt')
+            print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+            save_out = {
+                "out": model.state_dict(),
+                "ctx": CONTEXT_SIZE,
+                "n_embd": n_embd,
+                "n_layer": n_layer,
+                "chars": tokenizer.chars
+            }
+            torch.save(save_out, 'current.pt')
 
         # sample a batch of data
         xb, yb = get_batch(train_data, device)
@@ -101,7 +116,7 @@ def train():
         "n_layer": n_layer,
         "chars": tokenizer.chars
     }
-    torch.save(save_out, 'model.pt')
+    torch.save(save_out, SAVE_FILE)
 
     # generate from the model
     context = torch.zeros((1, 1), dtype=torch.long, device=device)
