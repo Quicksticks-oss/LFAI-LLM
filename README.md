@@ -24,7 +24,7 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 
 ## Documentation
 
-[Documentation](docs/DOCUMENTATION.md)
+[Documentation V1](docs/DOCUMENTATION.md)
 
 ## Usage/Examples
 
