@@ -15,6 +15,8 @@ This GitHub repository hosts an innovative project featuring an LSTM-based embed
 
 ## Models V2
 
+ - [Books](https://huggingface.co/Quicksticks-oss/LFAIv2/resolve/main/LFAI-books-ctx512-2m.pth)
+   
 ## Screenshots
 
 ![Training](images/training.gif)
