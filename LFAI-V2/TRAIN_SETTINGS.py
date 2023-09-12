@@ -3,7 +3,7 @@
 TEXT_DATASET = 'dataset.txt'
 CONTEXT_SIZE = 512  # what is the maximum context length for predictions?
 
-FINETUNE = True
+FINETUNE = False # Enable this to finetune
 LOAD_FILE = "model_new.pt"
 
 SAVE_FILE = "final.pt"
