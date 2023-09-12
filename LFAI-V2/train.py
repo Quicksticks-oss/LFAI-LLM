@@ -78,6 +78,7 @@ def train():
         CONTEXT_SIZE = save_out["ctx"]
         model = LanguageModel(tokenizer.vocab_size, n_embd,
                             n_layer, CONTEXT_SIZE, device)
+        model.load_state_dict(save_out["out"])
     model = model.to(device)
     # print the number of parameters in the model
     print(

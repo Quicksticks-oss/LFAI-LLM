@@ -5,7 +5,7 @@ from tokenizer.tokenizer import CharBasedTokenizer
 from model import LanguageModel
 
 ### PARAMS ###
-MODEL = "model.pt"
+MODEL = "LFAI-books-ctx512-2m.pth"
 DEVICE = 'cpu'
 ### ###### ###
 
@@ -23,8 +23,7 @@ if __name__ == '__main__':
     # Load the state_dict into the model
     model = LanguageModel(tokenizer.vocab_size, n_embd,
                             n_layer, CONTEXT_SIZE, device)
-    state_dict = torch.load("current.pt", map_location="cpu")
-    model.load_state_dict(state_dict)
+    model.load_state_dict(save_out["out"])
     model = model.to(device)
     model.eval()
 
