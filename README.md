@@ -1,6 +1,7 @@
 
 ![Logo](images/banner.png)
 
+[![Discord](https://img.shields.io/badge/Join-The_Discord-blue)](https://discord.gg/y3pKfWkJ5B)
 [![Online Demo](https://img.shields.io/badge/Online-Inference_Demo-blue)](https://quicksticks-oss.github.io/LFAI/docs/pages)
 [![Open in colab](https://img.shields.io/badge/Training-Google_Colab-orange)](https://colab.research.google.com/drive/1znKbTH6ORQKMPSknFjpiBtQRd2_l-wZx?usp=sharing)
 
@@ -58,19 +59,20 @@ The main settings you want to pay attention to are `TEXT_DATASET` and `max_iters
 ### Finetuning V2
 If you want to finetune a dataset all you need to do is set `FINETUNE` to `True` and set `LOAD_FILE` to the model you want to finetune.
 
-## Roadmap
+## Roadmap V2
+
+- Train More Public Models
+- Additional networks like GRU
+
+## Roadmap V1
 
 - ~~Train More Public Models~~
 
 - ~~Additional networks like GRU~~
 
-- Add online model inference.
-
-- Add v5
-
 - ~~Use last token as new token in inference~~
 
-- Add more integrations
+- ~~Add more integrations~~
 
 ## License
 
