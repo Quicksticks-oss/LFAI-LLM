@@ -16,6 +16,6 @@ eval_iters = 200
 
 learning_rate = 1e-2
 
-n_embd = 128
-n_layer = 6
+NEMBD = 256
+NLAYER = 6
 # -----------

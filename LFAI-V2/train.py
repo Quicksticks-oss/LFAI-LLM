@@ -4,6 +4,7 @@ from torch.nn import functional as F
 from data_processing.tokenizer_generator import generate_tokenizer
 from tokenizer.tokenizer import CharBasedTokenizer
 from TRAIN_SETTINGS import *
+import TRAIN_SETTINGS
 from model import LanguageModel
 import json
 import os
@@ -68,8 +69,8 @@ def train():
     val_data = data[n:]
     print('Creating Neural Network...')
     if not FINETUNE:
-        model = LanguageModel(tokenizer.vocab_size, n_embd,
-                            n_layer, CONTEXT_SIZE, device)
+        model = LanguageModel(tokenizer.vocab_size, TRAIN_SETTINGS.NEMBD,
+                            TRAIN_SETTINGS.NLAYER, TRAIN_SETTINGS.CONTEXT_SIZE, device)
     else:
         print('Currently loading model to finetune.')
         save_out = torch.load(LOAD_FILE)
@@ -93,9 +94,9 @@ def train():
             print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
             save_out = {
                 "out": model.state_dict(),
-                "ctx": CONTEXT_SIZE,
-                "n_embd": n_embd,
-                "n_layer": n_layer,
+                "ctx": TRAIN_SETTINGS.CONTEXT_SIZE,
+                "n_embd": TRAIN_SETTINGS.NEMBD,
+                "n_layer": TRAIN_SETTINGS.NLAYER,
                 "chars": tokenizer.chars
             }
             torch.save(save_out, 'current.pt')
@@ -112,9 +113,9 @@ def train():
 
     save_out = {
         "out": model.state_dict(),
-        "ctx": CONTEXT_SIZE,
-        "n_embd": n_embd,
-        "n_layer": n_layer,
+        "ctx": TRAIN_SETTINGS.CONTEXT_SIZE,
+        "n_embd": TRAIN_SETTINGS.NEMBD,
+        "n_layer": TRAIN_SETTINGS.NLAYER,
         "chars": tokenizer.chars
     }
     torch.save(save_out, SAVE_FILE)
