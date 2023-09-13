@@ -4,6 +4,7 @@ from model import LanguageModel
 
 ### PARAMS ###
 MODEL = "LFAI-books-ctx512-2m.pth"
+ZERO_SHOT = False
 DEVICE = 'cpu'
 ### ###### ###
 
@@ -25,7 +26,11 @@ if __name__ == '__main__':
     model = model.to(device)
     model.eval()
 
-    context = torch.zeros((1, 1), dtype=torch.long, device=device)
-    genned, hidden = model.generate(context, max_new_tokens=2000)
+    if ZERO_SHOT:
+        context = torch.zeros((1, 1), dtype=torch.long, device=device)
+    else:
+        msg = input(" Prompt >> ")
+        context = torch.tensor([tokenizer.encode(msg)], dtype=torch.long, device=device)
+    genned, hidden = model.generate(context, max_new_tokens=64)
     genned = genned[0].tolist()
     print(tokenizer.decode(genned))
