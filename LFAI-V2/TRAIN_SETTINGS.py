@@ -10,12 +10,12 @@ SAVE_FILE = "final.pt"
 
 batch_size = 32
 
-max_iters = 25000
+max_iters = 5000
 eval_interval = 25
 eval_iters = 200
 
 learning_rate = 1e-2
 
-NEMBD = 256
+NEMBD = 32 # Best suited for 1gb-5gb datasets
 NLAYER = 6
 # -----------
