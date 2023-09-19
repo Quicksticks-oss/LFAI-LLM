@@ -7,6 +7,7 @@ from TRAIN_SETTINGS import *
 import TRAIN_SETTINGS
 from model import LanguageModel
 import json
+from tqdm import tqdm
 import os
 
 
@@ -49,6 +50,7 @@ def estimate_loss(model, data, device):
 
 def train():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
     tokenizer_file = "./tokens.json"
     if os.path.exists(tokenizer_file):
         print(f"The path '{tokenizer_file}' exists.")
@@ -85,8 +87,10 @@ def train():
     print(
         f'Network contains {sum(p.numel() for p in model.parameters())/1e6:.2f}M parameters...')
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    last_train = 1000
+    td = tqdm(range(0, max_iters), dynamic_ncols=True)
 
-    for iter in range(max_iters):
+    for iter in td:
 
         # every once in a while evaluate the loss on train and val sets
         if iter % eval_interval == 0 or iter == max_iters - 1:
@@ -111,6 +115,9 @@ def train():
         loss.backward()
         optimizer.step()
 
+        description = f'{TRAIN_SETTINGS.NAME} - [ epoch: [{iter}/{max_iters}], loss: {loss.item():.4f} ]'
+        td.set_description(description)
+
     save_out = {
         "out": model.state_dict(),
         "ctx": TRAIN_SETTINGS.CONTEXT_SIZE,
@@ -121,7 +128,7 @@ def train():
     torch.save(save_out, SAVE_FILE)
 
     # generate from the model
-    context = torch.zeros((1, 1), dtype=torch.long, device=device)
+    context = torch.tensor([tokenizer.encode("User: ")], dtype=torch.long, device=device) # torch.zeros((1, 1), dtype=torch.long, device=device)
     genned, hidden = model.generate(context, max_new_tokens=2000)
     genned = genned[0].tolist()
     print(tokenizer.decode(genned))
