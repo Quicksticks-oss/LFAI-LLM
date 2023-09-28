@@ -128,7 +128,7 @@ def train():
 
     # generate from the model
     context = torch.tensor([tokenizer.encode("User: ")], dtype=torch.long, device=device) # torch.zeros((1, 1), dtype=torch.long, device=device)
-    genned, hidden = model.generate(context, max_new_tokens=2000)
+    genned, hidden = model.generate(context, max_new_tokens=100)
     genned = genned[0].tolist()
     print(tokenizer.decode(genned))
 
