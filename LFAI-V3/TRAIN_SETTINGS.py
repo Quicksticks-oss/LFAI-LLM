@@ -18,6 +18,6 @@ eval_iters = 100
 
 learning_rate = 1e-2
 
-NEMBD = 32 # Best suited for 1gb-5gb datasets
+NEMBD = 1024 # Best suited for 1gb-15gb datasets 45m params
 NLAYER = 4
 # -----------
