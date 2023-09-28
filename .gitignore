@@ -10189,3 +10189,7 @@ LFAI-V3/tokens.json
 LFAI-V3/current.pt
 LFAI-V3/final.pt
 LFAI-V3/input.txt
+LFAI-V3/models/books-essay-qa.pth
+LFAI-V3/models/books-instruct-minerd.pth
+LFAI-V3/models/books-instruct.pth
+LFAI-V3/models/books.pth
