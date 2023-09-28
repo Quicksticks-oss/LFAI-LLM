@@ -13,7 +13,7 @@ SAVE_FILE = "final.pt"
 batch_size = 32
 
 max_iters = 500
-eval_interval = 250
+eval_interval = 100
 eval_iters = 100
 
 learning_rate = 1e-2
