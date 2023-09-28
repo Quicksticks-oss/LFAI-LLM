@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # Load the state_dict into the model
     model = LanguageModel(tokenizer.vocab_size, n_embd,
                             n_layer, CONTEXT_SIZE, device)
-    model.load_state_dict(save_out["out"])
+    model.load_state_dict(save_out["out"], strict=False)
     model = model.to(device)
     model.eval()
 
