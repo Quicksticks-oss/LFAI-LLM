@@ -16,9 +16,12 @@ class LanguageModel(nn.Module):
         # each token directly reads off the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(context_size, n_embd)
-        self.blocks = nn.LSTM(n_embd, n_embd, n_layer, batch_first=True)#nn.Sequential(*[nn.Linear(n_embd, n_embd) for _ in range(n_layer)])
-        self.ln_f = nn.LayerNorm(n_embd) # final layer norm
-        self.lm_head = nn.Linear(n_embd, vocab_size)
+        self.blocks = nn.LSTM(n_embd, n_embd, n_layer, batch_first=True)
+        # Combine LayerNorm and Linear layers
+        self.lm_head = nn.Sequential(
+            nn.LayerNorm(n_embd),
+            nn.Linear(n_embd, vocab_size)
+        )
 
     def forward(self, idx, targets=None, hidden=None):
         B, T = idx.shape
@@ -33,8 +36,7 @@ class LanguageModel(nn.Module):
         else:
             x, hidden = self.blocks(x, hidden) # (B,T,C)
         
-        x = self.ln_f(x) # (B,T,C)
-        logits = self.lm_head(x) # (B,T,vocab_size)
+        logits = self.lm_head(x)
 
         if targets is None:
             loss = None
@@ -43,6 +45,8 @@ class LanguageModel(nn.Module):
             logits = logits.view(B*T, C)
             targets = targets.view(B*T)
             loss = F.cross_entropy(logits, targets)
+
+        nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
 
         return logits, hidden, loss
 

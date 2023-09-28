@@ -10185,3 +10185,7 @@ LFAI-V3-modular/LibriSpeech/train-clean-100/254/145458/254-145458-0013.flac
 LFAI-V3-modular/LibriSpeech/train-clean-100/254/145458/254-145458-0014.flac
 LFAI-V3-modular/LibriSpeech/train-clean-100/254/145458/254-145458-0015.flac
 LFAI-V3-modular/LibriSpeech/train-clean-100/254/145458/254-145458-0016.flac
+LFAI-V3/tokens.json
+LFAI-V3/current.pt
+LFAI-V3/final.pt
+LFAI-V3/input.txt
